@@ -57,7 +57,7 @@ def get_response_from_ChatGPT_API(message_context, apikey):
         "model": "gpt-3.5-turbo",
         "messages": message_context
     }
-    url = "https://api.openai.com/v1/chat/completions"
+    url = "https://api.peanutsplash.top/v1/chat/completions"
 
     try:
         response = requests.post(url, headers=header, data=json.dumps(data))
@@ -157,7 +157,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
         "stream": True
     }
     print("开始流式请求")
-    url = "https://api.openai.com/v1/chat/completions"
+    url = "https://api.peanutsplash.top/v1/chat/completions"
     # 请求接收流式数据 动态print
     try:
         response = requests.request("POST", url, headers=header, json=data, stream=True)
@@ -336,7 +336,7 @@ def get_balance(apikey):
         head = "### 通用api key  \n"
         apikey = API_KEY
 
-    subscription_url = "https://api.openai.com/v1/dashboard/billing/subscription"
+    subscription_url = "https://api.peanutsplash.top/v1/dashboard/billing/subscription"
     headers = {
         "Authorization": "Bearer " + apikey,
         "Content-Type": "application/json"
@@ -352,7 +352,7 @@ def get_balance(apikey):
     start_date = (datetime.datetime.now() - datetime.timedelta(days=99)).strftime("%Y-%m-%d")
     # end_date设置为今天日期+1
     end_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    billing_url = f"https://api.openai.com/v1/dashboard/billing/usage?start_date={start_date}&end_date={end_date}"
+    billing_url = f"https://api.peanutsplash.top/v1/dashboard/billing/usage?start_date={start_date}&end_date={end_date}"
     billing_response = requests.get(billing_url, headers=headers)
     if billing_response.status_code == 200:
         data = billing_response.json()
@@ -678,4 +678,4 @@ if __name__ == '__main__':
         # 退出程序
         print("请在openai官网注册账号，获取api_key填写至程序内或命令行参数中")
         exit()
-    app.run(host="0.0.0.0", port=PORT, debug=False)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
