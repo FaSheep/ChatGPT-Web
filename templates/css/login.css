@@ -1,0 +1,208 @@
+/*css for login page */
+body {
+    margin: 0;
+}
+.container {
+    display: flex;
+    margin: 0 auto;
+}
+.rowCo {
+    display: inline-flex;
+    flex-direction: row;
+    align-content: center;
+}
+.ctd,
+.ctd2 {
+    background-image: linear-gradient(150deg,#d2d4d4,#f5f5f5,#ffffff);
+    border: 1px solid #f5f5f5;
+    border-radius: 15px;
+    -webkit-box-shadow: 0px 1px 5px -1px rgba(109,105,105,0.48);
+        -moz-box-shadow: 1px 1px 5px -1px rgba(109,105,105,0.48);
+            box-shadow: 2px 2px 5px -1px rgba(109,105,105,0.48);
+    /*width: 100%;*/
+    padding: 20px;
+}
+.ctdimg {
+    width: 100px;
+    height: 110px;
+    position: relative;
+    border-radius: 100px;
+    padding: 3px;
+}
+.ctdh1 {
+    /*The rules will be in the media screen*/
+    font-family: 'Days One', sans-serif;
+    color: #666666;
+    font-weight: bold;
+    text-align: center;
+}
+.input-one {
+    border: none;
+    border-radius: 8px;
+    font-family: 'Share', cursive;
+    color: #666666;
+    width: 90%;
+}
+.space15 {
+    margin-top: 8%;
+}
+.ctdp1 {
+    font-family: 'Share', cursive;
+    color: #c0c0c0;
+    float: right; 
+}
+.ctdp2 {
+    font-family: 'Share', cursive;
+    color: #c0c0c0;
+    text-align: center;
+}
+.ctdp3,
+.ctdp5 {
+    font-family: 'Share', cursive;
+    color: #666666;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+.ctdp4 {
+    font-family: 'Share', cursive;
+    color: #666666; 
+    text-align: center;
+}
+.logdiv {
+    background-color: #d2d4d4;
+    text-align: center;
+    border-radius: 8px;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    box-shadow: 1px 1px 1px #6d6969;
+    font-family: 'Baloo', cursive;
+    color: #ffffff;  
+    font-stretch: extra-expanded;
+    transition-duration: 1s;
+}
+.logdiv:hover {
+    -webkit-box-shadow: 5px 7px 18px -3px rgba(192,192,192,1);
+        -moz-box-shadow: 5px 7px 18px -3px rgba(192,192,192,1);
+            box-shadow: 5px 7px 18px -3px rgba(192,192,192,1);
+    transform: scale(1.05,1.05);
+    background-color: #00ff7f;
+    border-top: 1px solid #b6fcd5;
+    border-left: 1px solid #b6fcd5;
+    border-bottom: 1px solid #6dc066;
+    border-right: 1px solid #6dc066;
+}
+.alog {
+    text-decoration: none;
+}
+a {
+    text-decoration: none;
+}
+
+/*
+responsive only for desktop 
+*/
+
+@media only screen and (min-width: 1030px) {
+    .container {
+        justify-content: center;
+        margin-top: 1%;
+    }
+    .ctdimg {
+        margin-left: 32%;
+        margin-top: 1%;
+        align-items: center;
+    }
+    .ctd,
+    .ctd2 {
+        width: 300px;
+    }
+    .ctd2 {
+        display: none;
+    }
+    .ctdh1 {
+        padding: 10px;
+        font-size: 2em;
+        font-stretch: 500%;
+    }
+    .input-one {
+        padding: 15px;
+        font-size: 1.1em;
+    }
+    .ctdp1,
+    .ctdp2,
+    .ctdp3,
+    .ctdp5 {
+        font-size: 0.9em;
+    }
+    .logdiv {
+        padding: 5px;
+        font-size: 1.5em
+    }
+    .top15 {
+        margin-top: 15%;
+    }
+    .top5 {
+        margin-top: 5%;
+    }
+    .top205 {
+        margin-top: 2.5%;
+    }
+    .top1 {
+        margin-top: 1%;
+    }
+}
+/*only for mobiles*/
+@media only screen and (max-width: 1024px) {
+    .ctd2 {
+        display: none;
+    }
+    .rowCo {
+        
+        flex-direction: column;
+        align-content: center;
+    }
+    .container {
+        margin-top: 5%;
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+    .ctdimg {
+        text-align: center;
+        margin-left: 30%;
+    }
+    .input-one {
+        padding: 15px;
+        font-size: 1.1em;
+    }
+    .ctdp1,
+    .ctdp2,
+    .ctdp3,
+    .ctdp5 {
+        font-size: 0.9em;
+    }
+    .logdiv {
+        padding: 5px;
+        font-size: 1.5em
+    }
+    .top15 {
+        margin-top: 15%;
+    }
+    .top5 {
+        margin-top: 5%;
+    }
+    .top205 {
+        margin-top: 2.5%;
+    }
+    /*this changed because need space from the container*/
+    .top1 {
+        margin-top: 3%;
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+}
+@media only screen and (max-width: 1024px) and (orientation: landscape) {
+    .ctdimg {
+        margin-left: 40%;
+    }
+}
