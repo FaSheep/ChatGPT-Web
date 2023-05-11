@@ -231,7 +231,25 @@
             overflow-x: hidden;
             outline: none;
             resize: none;
+            margin: 10px;
+            border-radius: 10px;
+            border: 1px solid #dedede;
         }
+
+        textarea:focus {
+            border: 1px solid #019ed5;
+            box-shadow: 0 0 0 0 rgba(39, 132, 198, 0.4);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        textarea:focus:hover {
+            box-shadow: 0 0 0 5px rgba(39, 132, 198, 0.4);
+        }
+
+        textarea:focus:active {
+            box-shadow: 0 0 0 10px rgba(39, 132, 198, 0.4);
+        }
+
 
         button {
             margin-left: 5px;
@@ -613,7 +631,7 @@
             <div class="content">
             </div>
             <div class="input-area">
-                <textarea name="text" id="textarea"></textarea>
+                <textarea name="text" id="textarea" placeholder="Enter 发送,Shift + Enter 换行"></textarea>
                 <div class="button-area">
                     <button id="stop-btn" class="talk_sub" style="display: none">停止生成</button>
                     <button id="del-btn" class="talk_sub">删除聊天记录</button>
