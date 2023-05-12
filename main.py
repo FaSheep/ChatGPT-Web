@@ -14,7 +14,7 @@ import asyncio
 import yaml
 from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
-from User import User
+# from User import User
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy import Column, String, Integer
 # from sqlalchemy.ext.declarative import declarative_base
@@ -35,6 +35,11 @@ with open("config.yaml", "r", encoding="utf-8") as f:
     SQL_PORT = config['SQL_PORT']
     SQL_USERNAME = config['SQL_USERNAME']
     SQL_PASSWORD = config['SQL_PASSWORD']
+    API_URL = config['API_URL']
+
+url = API_URL + "/v1/chat/completions"
+subscription_url = API_URL + "/v1/dashboard/billing/subscription"
+# billing_url = f"{API_URL}/v1/dashboard/billing/usage?start_date={start_date}&end_date={end_date}"
 
 if os.getenv("DEPLOY_ON_RAILWAY") is not None:  # 如果是在Railway上部署，需要删除代理
     os.environ.pop('HTTPS_PROXY', None)
@@ -97,7 +102,6 @@ def get_response_from_ChatGPT_API(message_context, apikey):
         "model": "gpt-3.5-turbo",
         "messages": message_context
     }
-    url = "https://api.openai.com/v1/chat/completions"
 
     try:
         response = requests.post(url, headers=header, data=json.dumps(data))
@@ -197,7 +201,6 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
         "stream": True
     }
     print("开始流式请求")
-    url = "https://api.openai.com/v1/chat/completions"
     # 请求接收流式数据 动态print
     try:
         response = requests.request("POST", url, headers=header, json=data, stream=True)
@@ -376,7 +379,6 @@ def get_balance(apikey):
         head = "### 通用api key  \n"
         apikey = API_KEY
 
-    subscription_url = "https://api.openai.com/v1/dashboard/billing/subscription"
     headers = {
         "Authorization": "Bearer " + apikey,
         "Content-Type": "application/json"
@@ -392,7 +394,7 @@ def get_balance(apikey):
     start_date = (datetime.datetime.now() - datetime.timedelta(days=99)).strftime("%Y-%m-%d")
     # end_date设置为今天日期+1
     end_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    billing_url = f"https://api.openai.com/v1/dashboard/billing/usage?start_date={start_date}&end_date={end_date}"
+    billing_url = f"{API_URL}/v1/dashboard/billing/usage?start_date={start_date}&end_date={end_date}"
     billing_response = requests.get(billing_url, headers=headers)
     if billing_response.status_code == 200:
         data = billing_response.json()
@@ -747,4 +749,4 @@ if __name__ == '__main__':
         # 退出程序
         print("请在openai官网注册账号，获取api_key填写至程序内或命令行参数中")
         exit()
-    app.run(host="0.0.0.0", port=PORT, debug=False)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
