@@ -4,6 +4,12 @@ HTTPS_PROXY: socks5://127.0.0.1:7890  # 本地部署是必须配置，请查看�
 PORT: 5000    # 运行端口
 API_URL: https://api.openai.com
 
+# SQL SERVER 设置
+SQL_SERVER: 127.0.0.1
+SQL_PORT: 3306
+SQL_USERNAME: #SQL用户名
+SQL_PASSWORD: #SQL密码
+
 # 功能性配置，可适当调整
 CHAT_CONTEXT_NUMBER_MAX: 7  # 连续对话模式下的上下文最大数量 n，即开启连续对话模式后，将上传本条消息以及之前你和GPT对话的n-1条消息
 USER_SAVE_MAX: 12  # 设置最多存储12个用户，当用户过多时可适当调大
