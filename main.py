@@ -1,5 +1,7 @@
 import datetime
+import hashlib
 import json
+import re
 
 import requests
 from flask import Flask, render_template, request, session
@@ -10,6 +12,12 @@ import threading
 import pickle
 import asyncio
 import yaml
+from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
+from User import User
+from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy import Column, String, Integer
+# from sqlalchemy.ext.declarative import declarative_base
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -23,20 +31,52 @@ with open("config.yaml", "r", encoding="utf-8") as f:
     API_KEY = config['OPENAI_API_KEY']
     CHAT_CONTEXT_NUMBER_MAX = config['CHAT_CONTEXT_NUMBER_MAX']     # 连续对话模式下的上下文最大数量 n，即开启连续对话模式后，将上传本条消息以及之前你和GPT对话的n-1条消息
     USER_SAVE_MAX = config['USER_SAVE_MAX']     # 设置最多存储n个用户，当用户过多时可适当调大
+    SQL_SEVER = config['SQL_SERVER']
+    SQL_PORT = config['SQL_PORT']
+    SQL_USERNAME = config['SQL_USERNAME']
+    SQL_PASSWORD = config['SQL_PASSWORD']
 
 if os.getenv("DEPLOY_ON_RAILWAY") is not None:  # 如果是在Railway上部署，需要删除代理
     os.environ.pop('HTTPS_PROXY', None)
 
 API_KEY = os.getenv("OPENAI_API_KEY", default=API_KEY)  # 如果环境变量中设置了OPENAI_API_KEY，则使用环境变量中的OPENAI_API_KEY
 PORT = os.getenv("PORT", default=PORT)  # 如果环境变量中设置了PORT，则使用环境变量中的PORT
+SQL_SEVER = os.getenv("SQL_SERVER", default=SQL_SEVER)
+SQL_PORT = os.getenv("SQL_PORT", default=SQL_PORT)
+SQL_USERNAME = os.getenv("SQL_USERNAME", default=SQL_USERNAME)
+SQL_PASSWORD = os.getenv("SQL_PASSWORD", default=SQL_PASSWORD)
 
 STREAM_FLAG = True  # 是否开启流式推送
 USER_DICT_FILE = "all_user_dict_v2.pkl"  # 用户信息存储文件（包含版本）
 lock = threading.Lock()  # 用于线程锁
 
+# User ORM 对象
+Base = declarative_base()
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    username = Column(String(16), unique=True)
+    password = Column(String(32))
+    wallet = Column(Integer)
+
+    def __repr__(self):
+        return f"User(id={self.id!r}, username={self.username!r}, password={self.password!r})"
+
+
+engine = create_engine(
+    f"mysql://{SQL_USERNAME}:{SQL_PASSWORD}@{SQL_SEVER}:{SQL_PORT}/chat?charset=utf8",
+    echo = True,
+    future=True
+)
+
+Base.metadata.create_all(bind=engine)
+
+# declarative_base().metadata.create_all(engine)
+
+
 project_info = "## ChatGPT 网页版    \n" \
                " Code From  " \
-               "[ChatGPT-Web](https://github.com/LiangYang666/ChatGPT-Web)  \n" \
+               "[ChatGPT-Web](https://github.com/FaSheep/ChatGPT-Web)  \n" \
                "发送`帮助`可获取帮助  \n"
 
 
@@ -376,6 +416,35 @@ def get_balance(apikey):
                 f"#### 剩余:\t{total-total_usage:.4f}  \n" \
                 f"\n"+recent
 
+
+@app.route('/signup', methods=['GET', 'POST'])
+def sign_up():
+    username = request.values.get("username").strip()
+    password = request.values.get("password").strip()
+
+    if len(username) > 16 or len(password) > 32:
+        return {"code": 400, "data": "data too long"}
+
+    # 检测到非法字符进入if
+    if not re.search(u'^[a-zA-Z0-9]+$', username):
+        # msg = u"用户名不可以包含非法字符(!,@,#,$,%...)"
+        return {"code": 400, "data": "username unexpect"}
+    if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
+        # msg = u""
+        return {"code": 400, "data": "password unexpect"}
+    
+    with Session(engine) as sqlsession:
+        if sqlsession.query(User).filter(User.username==username).exists():
+            return {"code": 400, "data": "user exist"}
+        sha256 = hashlib.sha256()
+        sha256.update(password.encode('utf-8'))
+        sqlsession.add(User(
+            username=username,
+            password=sha256.hexdigest,
+            wallet=0
+        ))
+        sqlsession.commit()
+    return {"code": 200, "data": "sign up successfully"}
 
 @app.route('/returnMessage', methods=['GET', 'POST'])
 def return_message():
