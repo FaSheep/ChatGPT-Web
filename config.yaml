@@ -1,5 +1,5 @@
 # 必须配置，或在环境变量中配置也可
-OPENAI_API_KEY: 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  # sk-XXXX更改为你的api key,可从此处获取 https://platform.openai.com/account/api-keys
+OPENAI_API_KEY: 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  # sk-XXXX更改为你的api key,可从此处获取 https://platform.openai.com/account/api-keys
 HTTPS_PROXY: socks5://127.0.0.1:7890  # 本地部署是必须配置，请查看自己的代理软件，clash的默认端口为7890,无需更改
 # HTTPS_PROXY: socks5://127.0.0.1:7890  # 本地部署是必须配置，请查看自己的代理软件，clash的默认端口为7890,无需更改
 

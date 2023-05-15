@@ -170,6 +170,93 @@
             background-color: #f2f2f2;
             box-shadow: 0 0 3px rgba(0, 0, 0, 0.05), 0 0 5px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
+            position: relative;
+        }
+
+        .item-left .dialogueButtonGroup {
+            position: absolute;
+            right: 0.2rem;
+            top: -1.7rem;
+            display: flex;
+            animation: fadeoutT 0.5s ease forwards;
+
+        }
+
+        .item-left:hover .dialogueButtonGroup {
+            display: flex;
+            width: calc(100% - 40px);
+            padding-bottom: 10px;
+            justify-content: right;
+            animation: fadeinB 0.5s ease forwards;
+
+        }
+
+        /* 淡出-向上 */
+        @keyframes fadeoutT {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+        }
+
+        /* 淡入-从下 */
+        @keyframes fadeinB {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .item-left .dialogueButtonGroup {
+            animation-fill-mode: forwards;
+            /* 动画结束后保持最后一帧状态 */
+        }
+
+        .item-left:hover .dialogueButtonGroup {
+            animation-fill-mode: none;
+            /* 鼠标移开后不保持最后一帧状态 */
+            animation: fadeinB 0.5s ease forwards;
+        }
+
+
+        .item-left .dialogueButtonGroup {
+            animation-fill-mode: forwards;
+            /* 动画结束后保持最后一帧状态 */
+        }
+
+        .item-left:hover .dialogueButtonGroup {
+            animation-fill-mode: none;
+            /* 鼠标移开后不保持最后一帧状态 */
+            animation: fadeinB 0.5s ease forwards;
+        }
+
+        .item-left .dialogueButtonGroup.fadeout {
+            animation: fadeoutT 0.5s ease forwards;
+        }
+
+        .item-left .dialogueButtonGroup.hide {
+            display: none;
+        }
+
+        .item-left .dialogueButtonGroup span {
+            font-size: 14px;
+            margin: 5px;
+            cursor: pointer;
+            color: #7b7b7b;
+        }
+
+        .item-left .dialogueButtonGroup span:hover {
+            color: #000;
         }
 
         .item-right .bubble {
@@ -376,6 +463,15 @@
             cursor: pointer;
             color: hsla(0, 0%, 54.9%, .8);
             transition: color .1s;
+            /* background-color: blue; */
+        }
+
+        .markdown pre .code-copy-btn:hover {
+            color: #cbd2ea;
+        }
+
+        #copy-btn {
+            background-color: #019ed5;
         }
 
         /* 加载动画 */
@@ -602,7 +698,7 @@
     <div class="all-container">
         <div class="left-container">
             <div class="chat-list">
-                <div class="newchat" id="newchat">添加新对话</div>
+                <!-- <div class="newchat" id="newchat">添加新对话</div> -->
             </div>
         </div>
         <div class="right-container">
@@ -688,9 +784,11 @@
 </script>
 <script>
     // 当鼠标移动到 bubble-left时显示复制按钮
-    $(document).on("mouseover", ".bubble-left", function () {
+    $(document).on("mouseover", ".bubble-left", function (event) {
         let copyBtn = $("#menu");
         let copyBtnItem = $("#copy-btn");
+        let dialogueButtonGroup = $(".dialogueButtonGroup");
+        // console.log(dialogueButtonGroup)
         let offset = $(this).offset();
         // 右上角显示
         $("#resend-btn").hide();
@@ -699,13 +797,21 @@
         copyBtn.css("top", offset.top);
         copyBtn.css("left", offset.left + $(this).width() - copyBtnItem.width() + 10);
         // 设置复制内容
+        console.log($(this).text())
         copyBtnItem.attr("data-clipboard-text", $(this).text());
+    });
+    // 当鼠标移动到 item-left时
+    $(document).on("mouseover", ".item-left", function (event) {
+        let dialogueButtonGroup = $(".dialogueButtonGroup");
+        let itemLeft = (this);
+        console.log(itemLeft)
+        // console.log(dialogueButtonGroup)
     });
     // 移出bubble-left和菜单按钮时才恢复
     $(document).on("mouseleave", ".bubble-left", function () {
         // 若进入了菜单按钮 不关闭
         if (event.toElement.className === "menu-btn") {
-            return;
+            return;e
         } else {
             $("#menu").css("display", "none");
         }
@@ -717,7 +823,7 @@
         let clipboard = new ClipboardJS('#copy-btn');
         clipboard.on('success', function (e) {
             console.log(e);
-            // 将显示字符更改为复制成功，一秒后改回
+            // 将显示字符更改为复制成功，4秒后改回
             $("#copy-btn").text("复制成功!");
             setTimeout(function () {
                 $("#copy-btn").text("复制");
@@ -770,6 +876,7 @@
         $("#menu").css("display", "none");
     });
 </script>
+
 <script>
     MathJax.Hub.Config({ // 公式配置
         showProcessingMessages: false, //关闭js加载过程信息
@@ -952,7 +1059,7 @@
                             '</div></div>';
                     } else if (messages[i].role === "assistant") {
                         html +=
-                            '<div class="item item-left"><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown">' +
+                            '<div class="item item-left"><div class="dialogueButtonGroup"><span>重试</span><span>复制</span></div><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown">' +
                             marked.marked(messages[i].content) + '</div></div>';
                     } else if (messages[i].role === "system") {
                         html += '<div class="item item-center"><span>' + messages[i].content +
@@ -1046,7 +1153,7 @@
         $(".content").scrollTop($(".content")[0].scrollHeight);
         if (text.startsWith('new:')) send_time_str = get_time_str(send_time)
         let chat_item = $(
-            '<div class="item item-left"><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown"><div class="loading"><div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div></div></div></div>'
+            '<div class="item item-left"><div class="dialogueButtonGroup"><span>重试</span><span>复制</span></div><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown"><div class="loading"><div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div></div></div></div>'
         )
         $(".content").append(chat_item);
         $(".content").scrollTop($(".content")[0].scrollHeight);
