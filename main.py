@@ -555,20 +555,20 @@ def sign_in():
     
     with Session(engine) as sqlsession:
         query = sqlsession.query(User).filter(User.username==username)
-        if sqlsession.query(query.exists()).scalar():
+        if not sqlsession.query(query.exists()).scalar():
         # if not sqlsession.query(User).filter(User.username==username).exists():
             return {"code": 400, "data": "user not exist"}
         sha256 = hashlib.sha256()
         sha256.update(password.encode('utf-8'))
         
         stmt = select(User).where(User.username==username)
-        with Session(engine) as sqlsession:
-            user = sqlsession.scalars(stmt).one()
-            if user.password == sha256.hexdigest():
-                session['user_id'] = username
-                return {"code": 200, "data": "sign in successfully"}
-            else:
-                return {"code": 200, "data": "error password"}
+        # with Session(engine) as sqlsession:
+        user = sqlsession.scalars(stmt).one()
+        if user.password == sha256.hexdigest():
+            session['user_id'] = username
+            return {"code": 200, "data": "sign in successfully"}
+        else:
+            return {"code": 200, "data": "error password"}
     
 @app.route('/recharge', methods=['GET', 'POST'])
 def recharge():
