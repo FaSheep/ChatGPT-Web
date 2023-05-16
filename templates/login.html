@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <script src="../../static/js/jquery.min.js"></script>
+    <title>登录</title>
+    <style>
+        * {
+            /* 初始化 */
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* 100%窗口高度 */
+            height: 100vh;
+            /* 弹性布局 居中 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 渐变背景 */
+            background: linear-gradient(200deg, #e3c5eb, #a9c1ed);
+            /* 溢出隐藏 */
+            overflow: hidden;
+        }
+
+        form {
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            /* 相对定位 */
+            position: relative;
+            z-index: 1;
+            background-color: #fff;
+            border-radius: 15px;
+            /* 弹性布局 垂直排列 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 350px;
+            height: 500px;
+            /* 阴影 */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .container .tit {
+            font-size: 26px;
+            margin: 65px auto 70px auto;
+        }
+
+        .container input {
+            width: 280px;
+            height: 30px;
+            text-indent: 8px;
+            border: none;
+            border-bottom: 1px solid #ddd;
+            outline: none;
+            margin: 12px auto;
+        }
+
+        .container button {
+            width: 280px;
+            height: 40px;
+            margin: 35px auto 40px auto;
+            border: none;
+            background: linear-gradient(-200deg, #fac0e7, #aac2ee);
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            /* 动画过渡 */
+            transition: 0.5s;
+        }
+
+        .container button:hover {
+            background: linear-gradient(-200deg, #aac2ee, #fac0e7);
+            background-position-x: -280px;
+        }
+
+        .container span {
+            font-size: 14px;
+        }
+
+        .container a {
+            color: plum;
+            text-decoration: none;
+        }
+
+        ul li {
+            position: absolute;
+            border: 1px solid #fff;
+            background-color: #fff;
+            width: 30px;
+            height: 30px;
+            list-style: none;
+            opacity: 0;
+        }
+
+        .square li {
+            top: 40vh;
+            left: 60vw;
+            /* 执行动画：动画名 时长 线性的 无限次播放 */
+            animation: square 10s linear infinite;
+        }
+
+        .square li:nth-child(2) {
+            top: 80vh;
+            left: 10vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 2s;
+        }
+
+        .square li:nth-child(3) {
+            top: 80vh;
+            left: 85vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 4s;
+        }
+
+        .square li:nth-child(4) {
+            top: 10vh;
+            left: 70vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 6s;
+        }
+
+        .square li:nth-child(5) {
+            top: 10vh;
+            left: 10vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 8s;
+        }
+
+        .circle li {
+            bottom: 0;
+            left: 15vw;
+            /* 执行动画 */
+            animation: circle 10s linear infinite;
+        }
+
+        .circle li:nth-child(2) {
+            left: 35vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 2s;
+        }
+
+        .circle li:nth-child(3) {
+            left: 55vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 6s;
+        }
+
+        .circle li:nth-child(4) {
+            left: 75vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 4s;
+        }
+
+        .circle li:nth-child(5) {
+            left: 90vw;
+            /* 设置动画延迟时间 */
+            animation-delay: 8s;
+        }
+
+        /* 定义动画 */
+        @keyframes square {
+            0% {
+                transform: scale(0) rotateY(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(5) rotateY(1000deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes circle {
+            0% {
+                transform: scale(0) rotateY(0deg);
+                opacity: 1;
+                bottom: 0;
+                border-radius: 0;
+            }
+
+            100% {
+                transform: scale(5) rotateY(1000deg);
+                opacity: 0;
+                bottom: 90vh;
+                border-radius: 50%;
+            }
+        }
+
+        /* 注册部分 */
+        .container .tit {
+            font-size: 26px;
+            margin: 65px auto 70px auto;
+        }
+
+        .container input {
+            width: 280px;
+            height: 30px;
+            text-indent: 8px;
+            border: none;
+            border-bottom: 1px solid #ddd;
+            outline: none;
+            margin: 12px auto;
+        }
+
+        .container button {
+            width: 280px;
+            height: 40px;
+            margin: 35px auto 40px auto;
+            border: none;
+            background: linear-gradient(-200deg, #fac0e7, #aac2ee);
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            /* 动画过渡 */
+            transition: 0.5s;
+        }
+
+        .container button:hover {
+            background: linear-gradient(-200deg, #aac2ee, #fac0e7);
+            background-position-x: -280px;
+        }
+
+        .container span {
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .container a {
+            color: plum;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 登录窗口 -->
+    <div id="login" class="container">
+        <div class="tit">登录</div>
+        <form id="loginForm"> <!-- 添加表单元素，并定义onsubmit事件 -->
+            <input type="text" placeholder="账号" name="username">
+            <input type="password" placeholder="密码" name="password">
+            <button type="submit">登录</button>
+        </form>
+        <span>没有账号？<a href="#" id="to-register" onclick="showRegister()">去注册</a></span>
+    </div>
+
+    <!-- 注册窗口 -->
+    <div id="register" class="container">
+        <div class="tit">注册</div>
+        <form id="registerForm"> <!-- 添加表单元素，并定义onsubmit事件 -->
+            <input type="text" placeholder="邮箱" name="email">
+            <input type="password" placeholder="密码" name="pwd1">
+            <input type="password" placeholder="确认密码" name="pwd2">
+            <button type="submit">注册</button> <!-- 将按钮设置为表单提交按钮 -->
+        </form>
+        <span>已有账号？<a href="#" id="to-login" onclick="showLogin()">去登录</a></span>
+    </div>
+
+    <div class="square">
+        <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    <div class="circle">
+        <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    <script>// 获取登录和注册窗口
+        const loginDom = $("#login");
+        const registerDom = $("#register");
+        console.log(loginDom)
+        // 显示登录窗口
+        function showLogin() {
+            loginDom.show();
+            registerDom.hide();
+            console.log('1')
+        }
+
+        // 显示注册窗口
+        function showRegister() {
+            registerDom.show();
+            loginDom.hide();
+            console.log('2')
+
+        }
+
+        // 初始化页面时，默认显示登录窗口
+        $(document).ready(function () {
+            showLogin();
+        });
+
+
+        // 实现登录和注册的逻辑
+        function login(username,pwd) {
+            $.ajax({
+                url: "/signin",
+                type: "post",
+                dataType: "json",
+                data: {
+                    "username": username,
+                    "password": pwd
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data.code === 200) {
+                    }
+                }
+            })
+        }
+        
+        function register() {
+            $.ajax({
+                url: "/signup",
+                type: "post",
+                dataType: "json",
+                data: {
+                    "username": 'PeanutSplash',
+                    "password": 'abc789456'
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data.code === 200) {
+                    }
+                }
+            })
+        }
+        // 验证表单(注册)
+        $("#registerForm").submit(function (e) {
+            e.preventDefault(); // 阻止默认跳转行为
+            const email = $("input[name='email']").val();
+            const pwd1 = $("input[name='pwd1']").val();
+            const pwd2 = $("input[name='pwd2']").val();
+
+            if (email == "") {
+                alert("请输入邮箱");
+                return false;
+            }
+
+            if (pwd1 == "" || pwd2 == "") {
+                alert("请输入密码");
+                return false;
+            }
+
+            if (pwd1 !== pwd2) {
+                alert("两次输入的密码不一致，请重新输入");
+                return false;
+            }
+            register()
+            // TODO: 发送请求注册用户
+            return true;
+        });
+        // 验证表单(登陆)
+        $("#loginForm").submit(function (e) {
+            e.preventDefault(); // 阻止默认跳转行为
+            const username = $("input[name='username']").val();
+            const pwd = $("input[name='password']").val();
+
+            if (username == "") {
+                alert("请输入账号");
+                return false;
+            }
+
+            if (pwd == "") {
+                alert("请输入密码");
+                return false;
+            }
+            // TODO: 发送请求登陆用户
+            login(username,pwd)
+            // return true;
+        });
+    </script>
+
+</body>
+
+</html>

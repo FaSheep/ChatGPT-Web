@@ -368,6 +368,14 @@ def index():
     check_session(session)
     return render_template('index.html')
 
+# 进入登陆页
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """
+    登陆页
+    :return: 登陆页
+    """
+    return render_template('login.html')
 
 @app.route('/loadHistory', methods=['GET', 'POST'])
 def load_messages():
