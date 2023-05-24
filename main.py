@@ -59,11 +59,14 @@ lock = threading.Lock()  # 用于线程锁
 # User ORM 对象
 Base = declarative_base()
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "user"
     id = Column(Integer, primary_key=True)
     username = Column(String(16), unique=True)
     password = Column(String(64))
     balance = Column(Integer)
+    chat = relationship(
+        "Chat", back_populates="user", cascade="all, delete-orphan"
+    )
     history = relationship(
         "History", back_populates="user", cascade="all, delete-orphan"
     )
@@ -71,14 +74,28 @@ class User(Base):
     def __repr__(self):
         return f"User(id={self.id!r}, username={self.username!r}, password={self.password!r})"
 
+class Chat(Base):
+    __tablename__ = "chat"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(32))
+
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user = relationship("User", back_populates="chat")
+    history = relationship(
+        "History", back_populates="chat", cascade="all, delete-orphan"
+    )
+
+
 class History(Base):
     __tablename__ = "history"
     id = Column(Integer, primary_key=True)
     content = Column(LONGTEXT)
     role = Column(String(10))
-    chat_name = Column(String(16))
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # chat_name = Column(String(16))
+    chat_id = Column(Integer, ForeignKey("chat.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
 
+    chat = relationship("Chat", back_populates="history")
     user = relationship("User", back_populates="history")
 
     def __repr__(self):
@@ -189,17 +206,18 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     :param have_chat_context: 已发送消息数量上下文(从重置为连续对话开始)
     :param chat_with_history: 是否连续对话
     """
-    stmt = select(User).where(User.username==session['userz_id'])
+    stmt = select(User).where(User.id==session['user_id'])
     with Session(engine) as sqlsession:
         user = sqlsession.scalars(stmt).one()
-        user.history.append(History(content=message, role="user"))
+        chat = sqlsession.execute(select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])).one()
+        chat.history.append(History(content=message, role="user"))
 
         message_history.append({"role": "user", "content": message})
         message_context = get_message_context(message_history, have_chat_context, chat_with_history)
         response = get_response_from_ChatGPT_API(message_context, apikey)
         message_history.append({"role": "assistant", "content": response})
 
-        user.history.append(History(content=message, role="assistant"))
+        chat.history.append(History(content=message, role="assistant"))
 
         count = 0
         for s in response:
@@ -220,7 +238,7 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     return response
 
 
-def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, username):
+def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, user_id, chat_id):
     """
     从ChatGPT API获取回复
     :param apikey:
@@ -248,7 +266,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
             one_message = {"role": "assistant", "content": stream_content}
             message_history.append(one_message)
             print('============', one_message)
-            stmt = select(User).where(User.username==username)
+            stmt = select(User).where(User.id==user_id)
             # with Session(engine) as sqlsession:
             sqlsession = Session(engine)
             
@@ -286,7 +304,8 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
                     yield line_str
                 
             user = sqlsession.scalars(stmt).one()
-            user.history.append(History(content=stream_content, role="assistant"))
+            chat = sqlsession.execute(select(Chat).where(Chat.user_id==user_id, Chat.id==chat_id)).one()
+            chat.history.append(History(content=stream_content, role="assistant"))
             count = 0
             for s in stream_content:
                 if '\u4e00' <= s <= '\u9fff':
@@ -306,17 +325,21 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
 
 def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
 
-    stmt = select(User).where(User.username==session['user_id'])
+    # stmt = select(User).where(User.id==session['user_id'])
+
+    stmt = select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])
     # print(stmt)
     with Session(engine) as sqlsession:
-        user = sqlsession.scalars(stmt).one()
-        user.history.append(History(content=message, role="user"))
+        chat = sqlsession.scalars(stmt).one()
+        # chat = sqlsession.execute(select(Chat).where(Chat.user_id==user.id))
+        chat.history.append(History(content=message, role="user"))
+        # user.history.append(History(content=message, role="user"))
         sqlsession.commit()
 
     message_history.append({"role": "user", "content": message})
     asyncio.run(save_all_user_dict())
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, session['user_id'])
+    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, session['user_id'], session['chat_id'])
     return generate
 
 
@@ -393,9 +416,9 @@ def load_messages():
                                                              "- 输入`帮助`以获取帮助提示"}]
     else:
         user_info = get_user_info(session.get('user_id'))
-        chat_id = user_info['selected_chat_id']
-        messages_history = user_info['chats'][chat_id]['messages_history']
-        print(f"用户({session.get('user_id')})加载聊天记录，共{len(messages_history)}条记录")
+        # chat_id = user_info['selected_chat_id']
+        # messages_history = user_info['chats'][chat_id]['messages_history']
+        # print(f"用户({session.get('user_id')})加载聊天记录，共{len(messages_history)}条记录")
         
         
         # query = sqlsession.query(User).filter(User.username==session['user_id'])
@@ -405,8 +428,8 @@ def load_messages():
         # sha256.update(password.encode('utf-8'))
         
         with Session(engine) as sqlsession:
-            history = sqlsession.query(History).join(History.user).filter(User.username==session['user_id']).all()
-            
+            # history = sqlsession.query(History).join(History.user).filter(User.id==session['user_id']).all()
+            history = sqlsession.query(History).filter(History.user_id==session['user_id'], History.chat_id==session['chat_id']).all()
             # history = sqlsession.scalars(stmt)
             messages_history = []
             # print(user.history)
@@ -430,11 +453,18 @@ def load_chats():
         chats = []
 
     else:
-        user_info = get_user_info(session.get('user_id'))
         chats = []
-        for chat_id, chat_info in user_info['chats'].items():
-            chats.append(
-                {"id": chat_id, "name": chat_info['name'], "selected": chat_id == user_info['selected_chat_id'], "messages_total": len(user_info['chats'][chat_id]['messages_history'])})
+        with Session(engine) as sqlsession:
+            chatList = sqlsession.execute(select(Chat).where(Chat.user_id==session['user_id'])).all()
+            for chat in chatList:
+                chats.append(
+                    {"id": chat.id, "name": chat.name, "selected": chat.id==session['chat_id'], "messages_total": len(chat.history)}
+                )
+        # user_info = get_user_info(session.get('user_id'))
+        
+        # for chat_id, chat_info in user_info['chats'].items():
+            # chats.append(
+                # {"id": chat_id, "name": chat_info['name'], "selected": chat_id == user_info['selected_chat_id'], "messages_total": len(user_info['chats'][chat_id]['messages_history'])})
 
     return {"code": 0, "data": chats, "message": ""}
 
@@ -565,7 +595,8 @@ def sign_in():
         # with Session(engine) as sqlsession:
         user = sqlsession.scalars(stmt).one()
         if user.password == sha256.hexdigest():
-            session['user_id'] = username
+            # session['user_id'] = username
+            session['user_id'] = user.id
             return {"code": 200, "data": "sign in successfully"}
         else:
             return {"code": 200, "data": "error password"}
@@ -578,7 +609,7 @@ def recharge():
         if not sqlsession.query(query.exists()).scalar():
             return {"code": 400, "data": "key not exist"}
         key_obj = sqlsession.query(Key).filter(Key.value==key).one()
-        user = sqlsession.query(User).filter(User.username==session['user_id']).one()
+        user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         if key_obj.balance <= 0:
             return {"code": 400, "data": "key already used"}
         user.balance += key_obj.balance
@@ -589,7 +620,7 @@ def recharge():
 @app.route('/checkbalance', methods=['GET', 'POST'])
 def checkbalance():
     with Session(engine) as sqlsession:
-        user = sqlsession.query(User).filter(User.username==session['user_id']).one()
+        user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         return {"code": 200, "data": user.balance}
 
 @app.route('/returnMessage', methods=['GET', 'POST'])
@@ -679,8 +710,8 @@ def return_message():
                 
                 stmt = select(User).where(User.username==user_id)
                 with Session(engine) as sqlsession:
-                    user = sqlsession.scalars(stmt).one()
-                    if not user.password == sha256.hexdigest():
+                    chat = sqlsession.scalars(stmt).one()
+                    if not chat.password == sha256.hexdigest():
                         # session['user_id'] = username
                         # return {"code": 200, "data": "sign in successfully"}
                         return "error password"
@@ -715,8 +746,8 @@ def return_message():
                 
                 stmt = select(User).where(User.username==user_id)
                 with Session(engine) as sqlsession:
-                    user = sqlsession.scalars(stmt).one()
-                    if not user.password == sha256.hexdigest():
+                    chat = sqlsession.scalars(stmt).one()
+                    if not chat.password == sha256.hexdigest():
                         # session['user_id'] = username
                         # return {"code": 200, "data": "sign in successfully"}
                         return "error password"
@@ -801,10 +832,10 @@ def return_message():
             user_info = get_user_info(session.get('user_id'))
             apikey = user_info.get('apikey')
 
-            stmt = select(User).where(User.username==session['user_id'])
+            stmt = select(User).where(User.id==session['user_id'])
             with Session(engine) as sqlsession:
-                for user in sqlsession.scalar(stmt):
-                    print(user)
+                for chat in sqlsession.scalar(stmt):
+                    print(chat)
 
             return get_balance(apikey)
         else:  # 处理聊天数据
@@ -820,10 +851,10 @@ def return_message():
             if send_time != "":
                 messages_history.append({'role': 'system', "content": send_time})
 
-                stmt = select(User).where(User.username==session['user_id'])
+                stmt = select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])
                 with Session(engine) as sqlsession:
-                    user = sqlsession.scalars(stmt).one()
-                    user.history.append(History(content=send_time, role="system"))
+                    chat = sqlsession.scalars(stmt).one()
+                    chat.history.append(History(content=send_time, role="system"))
                     sqlsession.commit()
             if not STREAM_FLAG:
                 content = handle_messages_get_response(send_message, apikey, messages_history,
