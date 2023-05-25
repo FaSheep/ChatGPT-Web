@@ -211,7 +211,7 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
         chat = sqlsession.execute(select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])).one()
         chat.history.append(History(content=message, role="user"))
 
-        message_history.append({"role": "user", "content": message})
+        # message_history.append({"role": "user", "content": message})
         message_context = get_message_context(message_history, have_chat_context, chat_with_history)
         response = get_response_from_ChatGPT_API(message_context, apikey)
         message_history.append({"role": "assistant", "content": response})
@@ -326,16 +326,16 @@ def handle_messages_get_response_stream(message, apikey, message_history, have_c
 
     # stmt = select(User).where(User.id==session['user_id'])
 
-    stmt = select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])
-    # print(stmt)
-    with Session(engine) as sqlsession:
-        chat = sqlsession.scalars(stmt).one()
-        # chat = sqlsession.execute(select(Chat).where(Chat.user_id==user.id))
-        chat.history.append(History(content=message, role="user"))
-        # user.history.append(History(content=message, role="user"))
-        sqlsession.commit()
+    # stmt = select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])
+    # # print(stmt)
+    # with Session(engine) as sqlsession:
+    #     chat = sqlsession.scalars(stmt).one()
+    #     # chat = sqlsession.execute(select(Chat).where(Chat.user_id==user.id))
+    #     chat.history.append(History(content=message, role="user"))
+    #     # user.history.append(History(content=message, role="user"))
+    #     sqlsession.commit()
 
-    message_history.append({"role": "user", "content": message})
+    # message_history.append({"role": "user", "content": message})
     asyncio.run(save_all_user_dict())
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
     generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, session['user_id'], session['chat_id'])
@@ -846,62 +846,49 @@ def return_message():
         # else:  # 处理聊天数据
         user_id = session.get('user_id')
         chat_id = session.get('chat_id')
+        chat_with_history = session.get('cwh')
         print(f"用户({user_id})发送消息:{send_message}")
 
-        messages_history = []
+        # messages_history = []
+    
+        # user_info = get_user_info(user_id)
+        # chat_id = user_info['selected_chat_id']
+        # messages_history = user_info['chats'][chat_id]['messages_history']
+        # chat_with_history = user_info['chats'][chat_id]['chat_with_history']
+        # apikey = user_info.get('apikey')
+        # if chat_with_history:
+            # user_info['chats'][chat_id]['have_chat_context'] += 1
+        # if send_time != "":
+            # messages_history.append({'role': 'system', "content": send_time})
+
         with Session(engine) as sqlsession:
-            # user = sqlsession.execute(select(User).where(User.id==user_id)).one()
             user = sqlsession.query(User).filter(User.id==user_id).one()
-
-            sqlsession.query(Chat).filter(Chat.id==session['chat_id']).one().history.append(History(role='user', content=send_message))
-            sqlsession.commit()
-
-            history = sqlsession.query(History).filter( History.chat_id==chat_id).all()
-            for h in history:
-                messages_history.append({'role': h.role, 'content': h.content})
-                
-            
-            if user is None:
-                return "用户不存在"
             if user.balance <= 0:
                 return "余额不足"
             
-            if chat_id is None:
-                chat_id = user.chat[0].id
+            chat = sqlsession.query(Chat).filter(Chat.id==chat_id).one()
+            chat.history.append(History(content=send_time, role="system"))
+            chat.history.append(History(content=send_message, role="user"))
+            sqlsession.commit()
             
-            user_info = get_user_info(user_id)
-            # chat_id = user_info['selected_chat_id']
-            messages_history = user_info['chats'][chat_id]['messages_history']
-            chat_with_history = user_info['chats'][chat_id]['chat_with_history']
-            # apikey = user_info.get('apikey')
-            if chat_with_history:
-                user_info['chats'][chat_id]['have_chat_context'] += 1
-            if send_time != "":
-                messages_history.append({'role': 'system', "content": send_time})
-
-                stmt = select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])
-                # with Session(engine) as sqlsession:
-                chat = sqlsession.scalars(stmt).one()
-                chat.history.append(History(content=send_time, role="system"))
-                sqlsession.commit()
             if not STREAM_FLAG:
-                content = handle_messages_get_response(send_message, API_KEY, messages_history,
-                                                        user_info['chats'][chat_id]['have_chat_context'],
+                content = handle_messages_get_response(send_message, API_KEY, chat.history,
+                                                        len(chat.history),
                                                         chat_with_history)
 
                 print(f"用户({session.get('user_id')})得到的回复消息:{content[:40]}...")
-                if chat_with_history:
-                    user_info['chats'][chat_id]['have_chat_context'] += 1
+                # if chat_with_history:
+                    # user_info['chats'][chat_id]['have_chat_context'] += 1
                 # 异步存储all_user_dict
-                asyncio.run(save_all_user_dict())
+                # asyncio.run(save_all_user_dict())
                 return content
             else:
-                generate = handle_messages_get_response_stream(send_message, API_KEY, messages_history,
-                                                                user_info['chats'][chat_id]['have_chat_context'],
+                generate = handle_messages_get_response_stream(send_message, API_KEY, chat.history,
+                                                                len(chat.history),
                                                                 chat_with_history)
                 print(generate)
-                if chat_with_history:
-                    user_info['chats'][chat_id]['have_chat_context'] += 1
+                # if chat_with_history:
+                    # user_info['chats'][chat_id]['have_chat_context'] += 1
 
                 return app.response_class(generate(), mimetype='application/json')
 
@@ -972,9 +959,19 @@ def select_chat():
     if not check_user_bind(session):
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
     user_id = session.get('user_id')
-    user_info = get_user_info(user_id)
-    user_info['selected_chat_id'] = chat_id
-    return {"code": 200, "msg": "选择聊天对象成功"}
+    with Session(engine) as sqlsession:
+        chats = sqlsession.query(Chat).filter(Chat.user_id==user_id).all()
+        for chat in chats:
+            if chat_id == chat.id:
+                if user_id == chat.user_id:
+                    session['chat_id'] = chat_id
+                    return {"code": 200, "msg": "选择聊天对象成功"}
+                else:
+                    return {"code": 400, "msg": "无权限"}
+    
+    # user_info = get_user_info(user_id)
+    # user_info['selected_chat_id'] = chat_id
+    return {"code": 400, "msg": "无效ID"}
 
 
 @app.route('/newChat', methods=['GET'])
@@ -989,12 +986,19 @@ def new_chat():
     if not check_user_bind(session):
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
     user_id = session.get('user_id')
-    user_info = get_user_info(user_id)
-    new_chat_id = str(uuid.uuid1())
-    user_info['selected_chat_id'] = new_chat_id
-    user_info['chats'][new_chat_id] = new_chat_dict(user_id, name, time)
+    # user_info = get_user_info(user_id)
+    # new_chat_id = str(uuid.uuid1())
+    # user_info['selected_chat_id'] = new_chat_id
+    # user_info['chats'][new_chat_id] = new_chat_dict(user_id, name, time)
     print("新建聊天对象")
-    return {"code": 200, "data": {"name": name, "id": new_chat_id, "selected": True, "messages_total": len(user_info['chats'][new_chat_id]['messages_history'])}}
+    with Session(engine) as sqlsession:
+        user = sqlsession.query(User).filter(User.id==user_id).one()
+        user.chat.append(Chat(name=name, history=[]))
+        sqlsession.commit()
+        user = sqlsession.query(User).filter(User.id==user_id).one()
+        chat_id = user.chat[-1].id
+    session['chat_id'] = chat_id
+    return {"code": 200, "data": {"name": name, "id": chat_id, "selected": True, "messages_total": 0}}
 
 
 @app.route('/deleteHistory', methods=['GET'])
