@@ -614,7 +614,7 @@ def sign_in():
             session['chat_with_history'] = False
             return {"code": 200, "data": "sign in successfully"}
         else:
-            return {"code": 200, "data": "error password"}
+            return {"code": 400, "data": "error password"}
     
 @app.route('/recharge', methods=['GET', 'POST'])
 def recharge():

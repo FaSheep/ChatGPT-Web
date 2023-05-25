@@ -3,8 +3,13 @@
 
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/css/bootstrap.min.css">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <script src="../../static/js/jquery.min.js"></script>
+    <!--  popper.min.js 用于弹窗、提示、下拉菜单 -->
+    <script src="https://cdn.staticfile.org/popper.js/2.9.3/umd/popper.min.js"></script>
+    <!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/js/bootstrap.min.js"></script>
     <title>登录</title>
     <style>
         * {
@@ -314,7 +319,7 @@
 
 
         // 实现登录和注册的逻辑
-        function login(username,pwd) {
+        function login(username, pwd) {
             $.ajax({
                 url: "/signin",
                 type: "post",
@@ -326,24 +331,40 @@
                 success: function (data) {
                     console.log(data);
                     if (data.code === 200) {
+                        setTimeout(function () {
+                            window.location.href = "/";
+                        }, 1000);
+                    } else {
+                        alert(data.data)
                     }
+                },
+                catch: function () {
+                    alert('请检查网络')
                 }
             })
         }
-        
-        function register() {
+
+        function register(email, pwd1) {
             $.ajax({
                 url: "/signup",
                 type: "post",
                 dataType: "json",
                 data: {
-                    "username": 'PeanutSplash',
-                    "password": 'abc789456'
+                    "username": email,
+                    "password": pwd1
                 },
                 success: function (data) {
                     console.log(data);
                     if (data.code === 200) {
+                        setTimeout(function () {
+                            showLogin()
+                        }, 1000);
+                    } else {
+                        alert(data.data)
                     }
+                },
+                catch() {
+                    alert('请检查网络！')
                 }
             })
         }
@@ -353,6 +374,7 @@
             const email = $("input[name='email']").val();
             const pwd1 = $("input[name='pwd1']").val();
             const pwd2 = $("input[name='pwd2']").val();
+            var emailRegex = /[^a-zA-Z0-9]+/; // 定义email的正则表达式
 
             if (email == "") {
                 alert("请输入邮箱");
@@ -368,7 +390,11 @@
                 alert("两次输入的密码不一致，请重新输入");
                 return false;
             }
-            register()
+            if (emailRegex.test(email)) {
+                alert("密码只能由大小写字母和数字组成");
+                return false;
+            }
+            register(email, pwd1)
             // TODO: 发送请求注册用户
             return true;
         });
@@ -388,7 +414,7 @@
                 return false;
             }
             // TODO: 发送请求登陆用户
-            login(username,pwd)
+            login(username, pwd)
             // return true;
         });
     </script>
