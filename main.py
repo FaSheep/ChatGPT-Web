@@ -59,27 +59,43 @@ lock = threading.Lock()  # 用于线程锁
 # User ORM 对象
 Base = declarative_base()
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "user"
     id = Column(Integer, primary_key=True)
     username = Column(String(16), unique=True)
     password = Column(String(64))
     balance = Column(Integer)
-    history = relationship(
-        "History", back_populates="user", cascade="all, delete-orphan"
+    chat = relationship(
+        "Chat", back_populates="user", cascade="all, delete-orphan"
     )
+    # history = relationship(
+    #     "History", back_populates="user", cascade="all, delete-orphan"
+    # )
 
     def __repr__(self):
         return f"User(id={self.id!r}, username={self.username!r}, password={self.password!r})"
+
+class Chat(Base):
+    __tablename__ = "chat"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(32))
+
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user = relationship("User", back_populates="chat")
+    history = relationship(
+        "History", back_populates="chat", cascade="all, delete-orphan"
+    )
 
 class History(Base):
     __tablename__ = "history"
     id = Column(Integer, primary_key=True)
     content = Column(LONGTEXT)
     role = Column(String(10))
-    chat_name = Column(String(16))
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # chat_name = Column(String(16))
+    chat_id = Column(Integer, ForeignKey("chat.id"), nullable=False)
+    # user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
 
-    user = relationship("User", back_populates="history")
+    chat = relationship("Chat", back_populates="history")
+    # user = relationship("User", back_populates="history")
 
     def __repr__(self):
         return f"{{\"content\":\"{self.content!r}\",\"role\":\"{self.role!r}\"}}"
@@ -189,17 +205,18 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     :param have_chat_context: 已发送消息数量上下文(从重置为连续对话开始)
     :param chat_with_history: 是否连续对话
     """
-    stmt = select(User).where(User.username==session['userz_id'])
+    stmt = select(User).where(User.id==session['user_id'])
     with Session(engine) as sqlsession:
         user = sqlsession.scalars(stmt).one()
-        user.history.append(History(content=message, role="user"))
+        chat = sqlsession.execute(select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])).one()
+        chat.history.append(History(content=message, role="user"))
 
-        message_history.append({"role": "user", "content": message})
+        # message_history.append({"role": "user", "content": message})
         message_context = get_message_context(message_history, have_chat_context, chat_with_history)
         response = get_response_from_ChatGPT_API(message_context, apikey)
         message_history.append({"role": "assistant", "content": response})
 
-        user.history.append(History(content=message, role="assistant"))
+        chat.history.append(History(content=message, role="assistant"))
 
         count = 0
         for s in response:
@@ -220,7 +237,7 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     return response
 
 
-def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, username):
+def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, user_id, chat_id):
     """
     从ChatGPT API获取回复
     :param apikey:
@@ -248,7 +265,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
             one_message = {"role": "assistant", "content": stream_content}
             message_history.append(one_message)
             print('============', one_message)
-            stmt = select(User).where(User.username==username)
+            stmt = select(User).where(User.id==user_id)
             # with Session(engine) as sqlsession:
             sqlsession = Session(engine)
             
@@ -286,7 +303,8 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
                     yield line_str
                 
             user = sqlsession.scalars(stmt).one()
-            user.history.append(History(content=stream_content, role="assistant"))
+            chat = sqlsession.execute(select(Chat).where(Chat.user_id==user_id, Chat.id==chat_id)).one()
+            chat.history.append(History(content=stream_content, role="assistant"))
             count = 0
             for s in stream_content:
                 if '\u4e00' <= s <= '\u9fff':
@@ -306,17 +324,21 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
 
 def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
 
-    stmt = select(User).where(User.username==session['user_id'])
-    # print(stmt)
-    with Session(engine) as sqlsession:
-        user = sqlsession.scalars(stmt).one()
-        user.history.append(History(content=message, role="user"))
-        sqlsession.commit()
+    # stmt = select(User).where(User.id==session['user_id'])
 
-    message_history.append({"role": "user", "content": message})
+    # stmt = select(Chat).where(Chat.user_id==session['user_id'], Chat.id==session['chat_id'])
+    # # print(stmt)
+    # with Session(engine) as sqlsession:
+    #     chat = sqlsession.scalars(stmt).one()
+    #     # chat = sqlsession.execute(select(Chat).where(Chat.user_id==user.id))
+    #     chat.history.append(History(content=message, role="user"))
+    #     # user.history.append(History(content=message, role="user"))
+    #     sqlsession.commit()
+
+    # message_history.append({"role": "user", "content": message})
     asyncio.run(save_all_user_dict())
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, session['user_id'])
+    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history, session['user_id'], session['chat_id'])
     return generate
 
 
@@ -393,9 +415,9 @@ def load_messages():
                                                              "- 输入`帮助`以获取帮助提示"}]
     else:
         user_info = get_user_info(session.get('user_id'))
-        chat_id = user_info['selected_chat_id']
-        messages_history = user_info['chats'][chat_id]['messages_history']
-        print(f"用户({session.get('user_id')})加载聊天记录，共{len(messages_history)}条记录")
+        # chat_id = user_info['selected_chat_id']
+        # messages_history = user_info['chats'][chat_id]['messages_history']
+        # print(f"用户({session.get('user_id')})加载聊天记录，共{len(messages_history)}条记录")
         
         
         # query = sqlsession.query(User).filter(User.username==session['user_id'])
@@ -405,8 +427,8 @@ def load_messages():
         # sha256.update(password.encode('utf-8'))
         
         with Session(engine) as sqlsession:
-            history = sqlsession.query(History).join(History.user).filter(User.username==session['user_id']).all()
-            
+            # history = sqlsession.query(History).join(History.user).filter(User.id==session['user_id']).all()
+            history = sqlsession.query(History).filter(History.chat_id==session['chat_id']).all()
             # history = sqlsession.scalars(stmt)
             messages_history = []
             # print(user.history)
@@ -430,11 +452,19 @@ def load_chats():
         chats = []
 
     else:
-        user_info = get_user_info(session.get('user_id'))
         chats = []
-        for chat_id, chat_info in user_info['chats'].items():
-            chats.append(
-                {"id": chat_id, "name": chat_info['name'], "selected": chat_id == user_info['selected_chat_id'], "messages_total": len(user_info['chats'][chat_id]['messages_history'])})
+        with Session(engine) as sqlsession:
+            # chatList = sqlsession.execute(select(Chat).where(Chat.user_id==session['user_id'])).all()
+            chatList = sqlsession.query(Chat).filter(Chat.user_id==session['user_id']).all()
+            for chat in chatList:
+                chats.append(
+                    {"id": chat.id, "name": chat.name, "selected": chat.id==session['chat_id'], "messages_total": len(chat.history)}
+                )
+        # user_info = get_user_info(session.get('user_id'))
+        
+        # for chat_id, chat_info in user_info['chats'].items():
+            # chats.append(
+                # {"id": chat_id, "name": chat_info['name'], "selected": chat_id == user_info['selected_chat_id'], "messages_total": len(user_info['chats'][chat_id]['messages_history'])})
 
     return {"code": 0, "data": chats, "message": ""}
 
@@ -531,12 +561,15 @@ def sign_up():
             return {"code": 400, "data": "user exist"}
         sha256 = hashlib.sha256()
         sha256.update(password.encode('utf-8'))
-        sqlsession.add(User(
+        user = User(
             username=username,
             password=sha256.hexdigest(),
             balance=0,
-            history=[]
-        ))
+            chat=[]
+        )
+        user.chat.append(Chat(name="默认会话", history=[]))
+        # user.chat[0].history.append(History(role="system", content="hello"))
+        sqlsession.add(user)
         sqlsession.commit()
     return {"code": 200, "data": "sign up successfully"}
 
@@ -565,7 +598,9 @@ def sign_in():
         # with Session(engine) as sqlsession:
         user = sqlsession.scalars(stmt).one()
         if user.password == sha256.hexdigest():
-            session['user_id'] = username
+            # session['user_id'] = username
+            session['user_id'] = user.id
+            session['chat_id'] = user.chat[0].id
             return {"code": 200, "data": "sign in successfully"}
         else:
             return {"code": 400, "data": "error password"}
@@ -578,7 +613,7 @@ def recharge():
         if not sqlsession.query(query.exists()).scalar():
             return {"code": 400, "data": "key not exist"}
         key_obj = sqlsession.query(Key).filter(Key.value==key).one()
-        user = sqlsession.query(User).filter(User.username==session['user_id']).one()
+        user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         if key_obj.balance <= 0:
             return {"code": 400, "data": "key already used"}
         user.balance += key_obj.balance
@@ -589,7 +624,7 @@ def recharge():
 @app.route('/checkbalance', methods=['GET', 'POST'])
 def checkbalance():
     with Session(engine) as sqlsession:
-        user = sqlsession.query(User).filter(User.username==session['user_id']).one()
+        user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         return {"code": 200, "data": user.balance}
 
 @app.route('/returnMessage', methods=['GET', 'POST'])
@@ -602,247 +637,258 @@ def return_message():
     send_message = request.values.get("send_message").strip()
     send_time = request.values.get("send_time").strip()
     url_redirect = "url_redirect:/"
-    if send_message == "帮助":
-        return "### 帮助\n" \
-               "1. 输入`new:username password`创建新的用户\n " \
-               "2. 输入`id:your_id`切换到已有用户id，新会话时无需加`id:`进入已有用户\n" \
-               "3. 输入`set_apikey:`[your_apikey](https://platform.openai.com/account/api-keys)设置用户专属apikey，`set_apikey:none`可删除专属key\n" \
-               "4. 输入`rename_id:xxx`可将当前用户id更改\n" \
-               "5. 输入`查余额`可获得余额信息及最近几天使用量\n" \
-               "6. 输入`帮助`查看帮助信息"
+    # if send_message == "帮助":
+    #     return "### 帮助\n" \
+    #            "1. 输入`new:username password`创建新的用户\n " \
+    #            "2. 输入`id:your_id`切换到已有用户id，新会话时无需加`id:`进入已有用户\n" \
+    #            "3. 输入`set_apikey:`[your_apikey](https://platform.openai.com/account/api-keys)设置用户专属apikey，`set_apikey:none`可删除专属key\n" \
+    #            "4. 输入`rename_id:xxx`可将当前用户id更改\n" \
+    #            "5. 输入`查余额`可获得余额信息及最近几天使用量\n" \
+    #            "6. 输入`帮助`查看帮助信息"
 
     if session.get('user_id') is None:  # 如果当前session未绑定用户
-        print("当前会话为首次请求，用户输入:\t", send_message)
-        if send_message.startswith("new:"):
+        return "please login"
+        # print("当前会话为首次请求，用户输入:\t", send_message)
+        # if send_message.startswith("new:"):
 
-            str = send_message.split(":")[1]
-            user_id = str.split(" ")[0]
-            password = str.split(" ")[1]
+        #     str = send_message.split(":")[1]
+        #     user_id = str.split(" ")[0]
+        #     password = str.split(" ")[1]
 
-            if len(user_id) > 16 or len(password) > 32:
-                return "data too long"
-            if not re.search(u'^[a-zA-Z0-9]+$', user_id):
-                return "username unexpect"
-            if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
-                return "password unexpect"
+        #     if len(user_id) > 16 or len(password) > 32:
+        #         return "data too long"
+        #     if not re.search(u'^[a-zA-Z0-9]+$', user_id):
+        #         return "username unexpect"
+        #     if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
+        #         return "password unexpect"
             
-            with Session(engine) as sqlsession:
-                query = sqlsession.query(User).filter(User.username==user_id)
-                if sqlsession.query(query.exists()).scalar():
-                    return {"code": 400, "data": "user exist"}
-                sha256 = hashlib.sha256()
-                sha256.update(password.encode('utf-8'))
-                print('密码：', sha256.hexdigest())
-                sqlsession.add(User(
-                    username=user_id,
-                    password=sha256.hexdigest(),
-                    balance=0,
-                    history=[]
-                ))
-                sqlsession.commit()
-            # return {"code": 200, "data": "sign up successfully"}
+        #     with Session(engine) as sqlsession:
+        #         query = sqlsession.query(User).filter(User.username==user_id)
+        #         if sqlsession.query(query.exists()).scalar():
+        #             return {"code": 400, "data": "user exist"}
+        #         sha256 = hashlib.sha256()
+        #         sha256.update(password.encode('utf-8'))
+        #         print('密码：', sha256.hexdigest())
+        #         sqlsession.add(User(
+        #             username=user_id,
+        #             password=sha256.hexdigest(),
+        #             balance=0,
+        #             history=[]
+        #         ))
+        #         sqlsession.commit()
+        #     # return {"code": 200, "data": "sign up successfully"}
 
             
 
-            # stmt = select(User).where(User.username==user_id)
-            # with Session(engine) as sqlsession:
-            #     if sqlsession.scalars(stmt).one().exist():
-            #         sqlsession.add(User(username=user_id, password=0, balance=0, history=[]))
-            #         sqlsession.commit()
+        #     # stmt = select(User).where(User.username==user_id)
+        #     # with Session(engine) as sqlsession:
+        #     #     if sqlsession.scalars(stmt).one().exist():
+        #     #         sqlsession.add(User(username=user_id, password=0, balance=0, history=[]))
+        #     #         sqlsession.commit()
 
-            if user_id in all_user_dict:
-                session['user_id'] = user_id
-                return url_redirect
-            user_dict = new_user_dict(user_id, send_time)
-            lock.acquire()
-            all_user_dict.put(user_id, user_dict)  # 默认普通对话
-            lock.release()
-            print("创建新的用户id:\t", user_id)
-            session['user_id'] = user_id
-            return url_redirect
-        else:
-            user_id = send_message.split(" ")[0]
-            password = send_message.split(" ")[1]
-            if len(user_id) > 16 or len(password) > 32:
-                return "data too long"
-            if not re.search(u'^[a-zA-Z0-9]+$', user_id):
-                return "username unexpect"
-            if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
-                return "password unexpect"
+        #     if user_id in all_user_dict:
+        #         session['user_id'] = user_id
+        #         return url_redirect
+        #     user_dict = new_user_dict(user_id, send_time)
+        #     lock.acquire()
+        #     all_user_dict.put(user_id, user_dict)  # 默认普通对话
+        #     lock.release()
+        #     print("创建新的用户id:\t", user_id)
+        #     session['user_id'] = user_id
+        #     return url_redirect
+        # else:
+        #     user_id = send_message.split(" ")[0]
+        #     password = send_message.split(" ")[1]
+        #     if len(user_id) > 16 or len(password) > 32:
+        #         return "data too long"
+        #     if not re.search(u'^[a-zA-Z0-9]+$', user_id):
+        #         return "username unexpect"
+        #     if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
+        #         return "password unexpect"
             
-            with Session(engine) as sqlsession:
-                query = sqlsession.query(User).filter(User.username==user_id)
-                if not sqlsession.query(query.exists()).scalar():
-                    return "user not exist"
-                sha256 = hashlib.sha256()
-                sha256.update(password.encode('utf-8'))
+        #     with Session(engine) as sqlsession:
+        #         query = sqlsession.query(User).filter(User.username==user_id)
+        #         if not sqlsession.query(query.exists()).scalar():
+        #             return "user not exist"
+        #         sha256 = hashlib.sha256()
+        #         sha256.update(password.encode('utf-8'))
                 
-                stmt = select(User).where(User.username==user_id)
-                with Session(engine) as sqlsession:
-                    user = sqlsession.scalars(stmt).one()
-                    if not user.password == sha256.hexdigest():
-                        # session['user_id'] = username
-                        # return {"code": 200, "data": "sign in successfully"}
-                        return "error password"
+        #         stmt = select(User).where(User.username==user_id)
+        #         with Session(engine) as sqlsession:
+        #             chat = sqlsession.scalars(stmt).one()
+        #             if not chat.password == sha256.hexdigest():
+        #                 # session['user_id'] = username
+        #                 # return {"code": 200, "data": "sign in successfully"}
+        #                 return "error password"
 
-            user_info = get_user_info(user_id) 
-            if user_info is None:
-                return "用户id不存在，请重新输入或创建新的用户id"
-            else:
-                session['user_id'] = user_id
-                print("已有用户id:\t", user_id)
-                # 重定向到index
-                return url_redirect
+        #     user_info = get_user_info(user_id) 
+        #     if user_info is None:
+        #         return "用户id不存在，请重新输入或创建新的用户id"
+        #     else:
+        #         session['user_id'] = user_id
+        #         print("已有用户id:\t", user_id)
+        #         # 重定向到index
+        #         return url_redirect
     else:  # 当存在用户id时
-        if send_message.startswith("id:"):
-            str = send_message.split(":")[1].strip()
+        # if send_message.startswith("id:"):
+        #     str = send_message.split(":")[1].strip()
 
-            user_id = str.split(" ")[0]
-            password = str.split(" ")[1]
-            if len(user_id) > 16 or len(password) > 32:
-                return "data too long"
-            if not re.search(u'^[a-zA-Z0-9]+$', user_id):
-                return "username unexpect"
-            if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
-                return "password unexpect"
+        #     user_id = str.split(" ")[0]
+        #     password = str.split(" ")[1]
+        #     if len(user_id) > 16 or len(password) > 32:
+        #         return "data too long"
+        #     if not re.search(u'^[a-zA-Z0-9]+$', user_id):
+        #         return "username unexpect"
+        #     if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
+        #         return "password unexpect"
             
-            with Session(engine) as sqlsession:
-                query = sqlsession.query(User).filter(User.username==user_id)
-                if not sqlsession.query(query.exists()).scalar():
-                    return "user not exist"
-                sha256 = hashlib.sha256()
-                sha256.update(password.encode('utf-8'))
+        #     with Session(engine) as sqlsession:
+        #         query = sqlsession.query(User).filter(User.username==user_id)
+        #         if not sqlsession.query(query.exists()).scalar():
+        #             return "user not exist"
+        #         sha256 = hashlib.sha256()
+        #         sha256.update(password.encode('utf-8'))
                 
-                stmt = select(User).where(User.username==user_id)
-                with Session(engine) as sqlsession:
-                    user = sqlsession.scalars(stmt).one()
-                    if not user.password == sha256.hexdigest():
-                        # session['user_id'] = username
-                        # return {"code": 200, "data": "sign in successfully"}
-                        return "error password"
+        #         stmt = select(User).where(User.username==user_id)
+        #         with Session(engine) as sqlsession:
+        #             user = sqlsession.scalars(stmt).one()
+        #             if not user.password == sha256.hexdigest():
+        #                 # session['user_id'] = username
+        #                 # return {"code": 200, "data": "sign in successfully"}
+        #                 return "error password"
 
-            user_info = get_user_info(user_id)
-            if user_info is None:
-                return "用户id不存在，请重新输入或创建新的用户id"
-            else:
-                session['user_id'] = user_id
-                print("切换到已有用户id:\t", user_id)
-                # 重定向到index
-                return url_redirect
-        elif send_message.startswith("new:"):
-            str = send_message.split(":")[1]
-            user_id = str.split(" ")[0]
-            password = str.split(" ")[1]
+        #     user_info = get_user_info(user_id)
+        #     if user_info is None:
+        #         return "用户id不存在，请重新输入或创建新的用户id"
+        #     else:
+        #         session['user_id'] = user_id
+        #         print("切换到已有用户id:\t", user_id)
+        #         # 重定向到index
+        #         return url_redirect
+        # elif send_message.startswith("new:"):
+        #     str = send_message.split(":")[1]
+        #     user_id = str.split(" ")[0]
+        #     password = str.split(" ")[1]
 
-            if len(user_id) > 16 or len(password) > 32:
-                return "data too long"
-            if not re.search(u'^[a-zA-Z0-9]+$', user_id):
-                return "username unexpect"
-            if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
-                return "password unexpect"
+        #     if len(user_id) > 16 or len(password) > 32:
+        #         return "data too long"
+        #     if not re.search(u'^[a-zA-Z0-9]+$', user_id):
+        #         return "username unexpect"
+        #     if not re.search(u'^[_a-zA-Z0-9@#\?!\.]+$', password):
+        #         return "password unexpect"
             
-            with Session(engine) as sqlsession:
-                query = sqlsession.query(User).filter(User.username==user_id)
-                if sqlsession.query(query.exists()).scalar():
-                    return {"code": 400, "data": "user exist"}
-                sha256 = hashlib.sha256()
-                sha256.update(password.encode('utf-8'))
-                sqlsession.add(User(
-                    username=user_id,
-                    password=sha256.hexdigest(),
-                    balance=0,
-                    history=[]
-                ))
-                sqlsession.commit()
+        #     with Session(engine) as sqlsession:
+        #         query = sqlsession.query(User).filter(User.username==user_id)
+        #         if sqlsession.query(query.exists()).scalar():
+        #             return {"code": 400, "data": "user exist"}
+        #         sha256 = hashlib.sha256()
+        #         sha256.update(password.encode('utf-8'))
+        #         sqlsession.add(User(
+        #             username=user_id,
+        #             password=sha256.hexdigest(),
+        #             balance=0,
+        #             history=[]
+        #         ))
+        #         sqlsession.commit()
 
-            if user_id in all_user_dict:
-                return "用户id已存在，请重新输入或切换到已有用户id"
-            session['user_id'] = user_id
-            user_dict = new_user_dict(user_id, send_time)
-            lock.acquire()
-            all_user_dict.put(user_id, user_dict)
-            lock.release()
-            print("创建新的用户id:\t", user_id)
-            return url_redirect
-        elif send_message.startswith("delete:"):  # 删除用户
-            user_id = send_message.split(":")[1]
-            if user_id != session.get('user_id'):
-                return "只能删除当前会话的用户id"
-            else:
-                lock.acquire()
-                all_user_dict.delete(user_id)
-                lock.release()
-                session['user_id'] = None
-                print("删除用户id:\t", user_id)
-                # 异步存储all_user_dict
-                asyncio.run(save_all_user_dict())
-                return url_redirect
-        elif send_message.startswith("set_apikey:"):
-            apikey = send_message.split(":")[1]
-            user_info = get_user_info(session.get('user_id'))
-            user_info['apikey'] = apikey
-            print("设置用户专属apikey:\t", apikey)
-            return "设置用户专属apikey成功"
-        elif send_message.startswith("rename_id:"):
-            new_user_id = send_message.split(":")[1]
-            user_info = get_user_info(session.get('user_id'))
-            if new_user_id in all_user_dict:
-                return "用户id已存在，请重新输入"
-            else:
-                lock.acquire()
-                all_user_dict.delete(session['user_id'])
-                all_user_dict.put(new_user_id, user_info)
-                lock.release()
-                session['user_id'] = new_user_id
-                asyncio.run(save_all_user_dict())
-                print("修改用户id:\t", new_user_id)
-                return f"修改成功,请牢记新的用户id为:{new_user_id}"
-        elif send_message == "查余额":
-            user_info = get_user_info(session.get('user_id'))
-            apikey = user_info.get('apikey')
+        #     if user_id in all_user_dict:
+        #         return "用户id已存在，请重新输入或切换到已有用户id"
+        #     session['user_id'] = user_id
+        #     user_dict = new_user_dict(user_id, send_time)
+        #     lock.acquire()
+        #     all_user_dict.put(user_id, user_dict)
+        #     lock.release()
+        #     print("创建新的用户id:\t", user_id)
+        #     return url_redirect
+        # elif send_message.startswith("delete:"):  # 删除用户
+        #     user_id = send_message.split(":")[1]
+        #     if user_id != session.get('user_id'):
+        #         return "只能删除当前会话的用户id"
+        #     else:
+        #         lock.acquire()
+        #         all_user_dict.delete(user_id)
+        #         lock.release()
+        #         session['user_id'] = None
+        #         print("删除用户id:\t", user_id)
+        #         # 异步存储all_user_dict
+        #         asyncio.run(save_all_user_dict())
+        #         return url_redirect
+        # elif send_message.startswith("set_apikey:"):
+        #     apikey = send_message.split(":")[1]
+        #     user_info = get_user_info(session.get('user_id'))
+        #     user_info['apikey'] = apikey
+        #     print("设置用户专属apikey:\t", apikey)
+        #     return "设置用户专属apikey成功"
+        # elif send_message.startswith("rename_id:"):
+        #     new_user_id = send_message.split(":")[1]
+        #     user_info = get_user_info(session.get('user_id'))
+        #     if new_user_id in all_user_dict:
+        #         return "用户id已存在，请重新输入"
+        #     else:
+        #         lock.acquire()
+        #         all_user_dict.delete(session['user_id'])
+        #         all_user_dict.put(new_user_id, user_info)
+        #         lock.release()
+        #         session['user_id'] = new_user_id
+        #         asyncio.run(save_all_user_dict())
+        #         print("修改用户id:\t", new_user_id)
+        #         return f"修改成功,请牢记新的用户id为:{new_user_id}"
+        # elif send_message == "查余额":
+        #     user_info = get_user_info(session.get('user_id'))
+        #     apikey = user_info.get('apikey')
 
-            stmt = select(User).where(User.username==session['user_id'])
-            with Session(engine) as sqlsession:
-                for user in sqlsession.scalar(stmt):
-                    print(user)
+        #     stmt = select(User).where(User.id==session['user_id'])
+        #     with Session(engine) as sqlsession:
+        #         for chat in sqlsession.scalar(stmt):
+        #             print(chat)
 
-            return get_balance(apikey)
-        else:  # 处理聊天数据
-            user_id = session.get('user_id')
-            print(f"用户({user_id})发送消息:{send_message}")
-            user_info = get_user_info(user_id)
-            chat_id = user_info['selected_chat_id']
-            messages_history = user_info['chats'][chat_id]['messages_history']
-            chat_with_history = user_info['chats'][chat_id]['chat_with_history']
-            apikey = user_info.get('apikey')
-            if chat_with_history:
-                user_info['chats'][chat_id]['have_chat_context'] += 1
-            if send_time != "":
-                messages_history.append({'role': 'system', "content": send_time})
+        #     return get_balance(apikey)
+        # else:  # 处理聊天数据
+        user_id = session.get('user_id')
+        chat_id = session.get('chat_id')
+        chat_with_history = session.get('cwh')
+        print(f"用户({user_id})发送消息:{send_message}")
 
-                stmt = select(User).where(User.username==session['user_id'])
-                with Session(engine) as sqlsession:
-                    user = sqlsession.scalars(stmt).one()
-                    user.history.append(History(content=send_time, role="system"))
-                    sqlsession.commit()
+        # messages_history = []
+    
+        # user_info = get_user_info(user_id)
+        # chat_id = user_info['selected_chat_id']
+        # messages_history = user_info['chats'][chat_id]['messages_history']
+        # chat_with_history = user_info['chats'][chat_id]['chat_with_history']
+        # apikey = user_info.get('apikey')
+        # if chat_with_history:
+            # user_info['chats'][chat_id]['have_chat_context'] += 1
+        # if send_time != "":
+            # messages_history.append({'role': 'system', "content": send_time})
+
+        with Session(engine) as sqlsession:
+            user = sqlsession.query(User).filter(User.id==user_id).one()
+            if user.balance <= 0:
+                return "余额不足"
+            
+            chat = sqlsession.query(Chat).filter(Chat.id==chat_id).one()
+            chat.history.append(History(content=send_time, role="system"))
+            chat.history.append(History(content=send_message, role="user"))
+            sqlsession.commit()
+            
             if not STREAM_FLAG:
-                content = handle_messages_get_response(send_message, apikey, messages_history,
-                                                       user_info['chats'][chat_id]['have_chat_context'],
-                                                       chat_with_history)
+                content = handle_messages_get_response(send_message, API_KEY, chat.history,
+                                                        len(chat.history),
+                                                        chat_with_history)
 
                 print(f"用户({session.get('user_id')})得到的回复消息:{content[:40]}...")
-                if chat_with_history:
-                    user_info['chats'][chat_id]['have_chat_context'] += 1
+                # if chat_with_history:
+                    # user_info['chats'][chat_id]['have_chat_context'] += 1
                 # 异步存储all_user_dict
-                asyncio.run(save_all_user_dict())
+                # asyncio.run(save_all_user_dict())
                 return content
             else:
-                generate = handle_messages_get_response_stream(send_message, apikey, messages_history,
-                                                               user_info['chats'][chat_id]['have_chat_context'],
-                                                               chat_with_history)
+                generate = handle_messages_get_response_stream(send_message, API_KEY, chat.history,
+                                                                len(chat.history),
+                                                                chat_with_history)
                 print(generate)
-                if chat_with_history:
-                    user_info['chats'][chat_id]['have_chat_context'] += 1
+                # if chat_with_history:
+                    # user_info['chats'][chat_id]['have_chat_context'] += 1
 
                 return app.response_class(generate(), mimetype='application/json')
 
@@ -869,10 +915,10 @@ def get_mode():
     check_session(session)
     if not check_user_bind(session):
         return "normal"
-    user_info = get_user_info(session.get('user_id'))
-    chat_id = user_info['selected_chat_id']
-    chat_with_history = user_info['chats'][chat_id]['chat_with_history']
-    if chat_with_history:
+    # user_info = get_user_info(session.get('user_id'))
+    # chat_id = user_info['selected_chat_id']
+    # chat_with_history = user_info['chats'][chat_id]['chat_with_history']
+    if True:
         return {"mode": "continuous"}
     else:
         return {"mode": "normal"}
@@ -913,9 +959,19 @@ def select_chat():
     if not check_user_bind(session):
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
     user_id = session.get('user_id')
-    user_info = get_user_info(user_id)
-    user_info['selected_chat_id'] = chat_id
-    return {"code": 200, "msg": "选择聊天对象成功"}
+    with Session(engine) as sqlsession:
+        chats = sqlsession.query(Chat).filter(Chat.user_id==user_id).all()
+        for chat in chats:
+            if chat_id == chat.id:
+                if user_id == chat.user_id:
+                    session['chat_id'] = chat_id
+                    return {"code": 200, "msg": "选择聊天对象成功"}
+                else:
+                    return {"code": 400, "msg": "无权限"}
+    
+    # user_info = get_user_info(user_id)
+    # user_info['selected_chat_id'] = chat_id
+    return {"code": 400, "msg": "无效ID"}
 
 
 @app.route('/newChat', methods=['GET'])
@@ -930,12 +986,19 @@ def new_chat():
     if not check_user_bind(session):
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
     user_id = session.get('user_id')
-    user_info = get_user_info(user_id)
-    new_chat_id = str(uuid.uuid1())
-    user_info['selected_chat_id'] = new_chat_id
-    user_info['chats'][new_chat_id] = new_chat_dict(user_id, name, time)
+    # user_info = get_user_info(user_id)
+    # new_chat_id = str(uuid.uuid1())
+    # user_info['selected_chat_id'] = new_chat_id
+    # user_info['chats'][new_chat_id] = new_chat_dict(user_id, name, time)
     print("新建聊天对象")
-    return {"code": 200, "data": {"name": name, "id": new_chat_id, "selected": True, "messages_total": len(user_info['chats'][new_chat_id]['messages_history'])}}
+    with Session(engine) as sqlsession:
+        user = sqlsession.query(User).filter(User.id==user_id).one()
+        user.chat.append(Chat(name=name, history=[]))
+        sqlsession.commit()
+        user = sqlsession.query(User).filter(User.id==user_id).one()
+        chat_id = user.chat[-1].id
+    session['chat_id'] = chat_id
+    return {"code": 200, "data": {"name": name, "id": chat_id, "selected": True, "messages_total": 0}}
 
 
 @app.route('/deleteHistory', methods=['GET'])
