@@ -4,7 +4,7 @@ import json
 import re
 
 import requests
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, redirect, render_template, request, session
 import os
 import uuid
 from LRU_cache import LRUCache
@@ -119,9 +119,7 @@ Base.metadata.create_all(bind=engine, checkfirst=True)
 
 project_info = "## ChatGPT 网页版    \n" \
                " Code From  " \
-               "[ChatGPT-Web](https://github.com/FaSheep/ChatGPT-Web)  \n" \
-               "发送`帮助`可获取帮助  \n"
-
+               "[ChatGPT-Web](https://github.com/FaSheep/ChatGPT-Web)  \n"
 
 def get_response_from_ChatGPT_API(message_context, apikey):
     """
@@ -281,7 +279,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, user_
                 line_str = str(line, encoding='utf-8')
                 if line_str.startswith("data:"):
                     if line_str.startswith("data: [DONE]"):
-                        asyncio.run(save_all_user_dict())
+                        # asyncio.run(save_all_user_dict())
                         break
                     line_json = json.loads(line_str[5:])
                     if 'choices' in line_json:
@@ -409,6 +407,15 @@ def login():
     """
     return render_template('login.html')
 
+# 进入充值页
+@app.route('/redeem', methods=['GET', 'POST'])
+def redeem():
+    """
+    充值页
+    :return: 充值页
+    """
+    return render_template('redeem.html')
+
 @app.route('/loadHistory', methods=['GET', 'POST'])
 def load_messages():
     """
@@ -416,15 +423,12 @@ def load_messages():
     :return: 聊天记录
     """
     check_session(session)
+    url = request.host_url + 'login'
     if session.get('user_id') is None:
         messages_history = [{"role": "assistant", "content": project_info},
-                            {"role": "assistant", "content": "#### 当前浏览器会话为首次请求\n"
-                                                             "#### 请输入已有用户`id`或创建新的用户`id`。\n"
-                                                             "- 已有用户`id`请在输入框中直接输入\n"
-                                                             "- 创建新的用户`id`请在输入框中输入`new:xxx`,其中`xxx`为你的自定义id，请牢记\n"
-                                                             "- 输入`帮助`以获取帮助提示"}]
+                            {"role": "assistant", "content": f"请[登录]({url})"}]
     else:
-        user_info = get_user_info(session.get('user_id'))
+        # user_info = get_user_info(session.get('user_id'))
         # chat_id = user_info['selected_chat_id']
         # messages_history = user_info['chats'][chat_id]['messages_history']
         # print(f"用户({session.get('user_id')})加载聊天记录，共{len(messages_history)}条记录")
@@ -616,8 +620,26 @@ def sign_in():
         else:
             return {"code": 400, "data": "error password"}
     
+@app.route('/signOut', methods=['GET', 'POST'])
+def sign_out():
+    session['user_id'] = None
+    session['chat_id'] = None
+    return redirect('/')
+
+@app.route('/isLogin', methods=['GET', 'POST'])
+def is_login():
+    check_session(session)
+    if not check_user_bind(session):
+        return {"code": 200, "data": False}
+    else:
+        return {"code": 200, "data": True}
+
 @app.route('/recharge', methods=['GET', 'POST'])
 def recharge():
+    check_session(session)
+    if not check_user_bind(session):
+        return {"code": -1, "msg": "请先创建或输入已有用户id"}
+
     key = request.values.get("key").strip()
     with Session(engine) as sqlsession:
         query = sqlsession.query(Key).filter(Key.value==key)
@@ -632,8 +654,21 @@ def recharge():
         sqlsession.commit()
     return {"code": 200, "data": "recharge successfully"}
 
-@app.route('/checkbalance', methods=['GET', 'POST'])
-def checkbalance():
+@app.route('/getName', methods=['GET', 'POST'])
+def get_name():
+    check_session(session)
+    if not check_user_bind(session):
+        return {"code": -1, "msg": "请先创建或输入已有用户id"}
+    
+    with Session(engine) as sqlsession:
+        user = sqlsession.query(User).filter(User.id==session['user_id']).one()
+        return {"code": 200, "data": user.username}
+    
+@app.route('/checkBalance', methods=['GET', 'POST'])
+def checkBalance():
+    check_session(session)
+    if not check_user_bind(session):
+        return {"code": -1, "msg": "请先创建或输入已有用户id"}
     with Session(engine) as sqlsession:
         user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         return {"code": 200, "data": user.balance}
@@ -941,7 +976,7 @@ def change_mode(status):
     """
     check_session(session)
     if not check_user_bind(session):
-        return {"code": -1, "msg": "请先创建或输入已有用户id"}
+        return {"code": -1, "msg": "请登录"}
     # user_info = get_user_info(session.get('user_id'))
     # chat_id = user_info['selected_chat_id']
     if status == "normal":
@@ -965,11 +1000,11 @@ def select_chat():
     选择聊天对象
     :return:
     """
-    chat_id = int(request.args.get("id"))
     check_session(session)
     if not check_user_bind(session):
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
     user_id = session.get('user_id')
+    chat_id = int(request.args.get("id"))
     with Session(engine) as sqlsession:
         chats = sqlsession.query(Chat).filter(Chat.user_id==user_id).all()
         for chat in chats:
@@ -992,7 +1027,7 @@ def new_chat():
     :return:
     """
     name = request.args.get("name")
-    time = request.args.get("time")
+    # time = request.args.get("time")
     check_session(session)
     if not check_user_bind(session):
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
@@ -1022,17 +1057,21 @@ def delete_history():
     if not check_user_bind(session):
         print("请先创建或输入已有用户id")
         return {"code": -1, "msg": "请先创建或输入已有用户id"}
-    user_info = get_user_info(session.get('user_id'))
-    chat_id = user_info['selected_chat_id']
-    default_chat_id = user_info['default_chat_id']
-    if default_chat_id == chat_id:
-        print("清空历史记录")
-        user_info["chats"][chat_id]['messages_history'] = user_info["chats"][chat_id]['messages_history'][:5]
-    else:
-        print("删除聊天对话")
-        del user_info["chats"][chat_id]
-    user_info['selected_chat_id'] = default_chat_id
-    return "2"
+    user_id = session['user_id']
+    chat_id = session['chat_id']
+    with Session(engine) as sqlsession:
+        user = sqlsession.query(User).filter(User.id==user_id).one()
+        if user.chat[0].id == chat_id:
+            print("清空历史记录")
+            sqlsession.query(History).filter(History.chat_id==chat_id).delete()
+        else:
+            print("删除聊天对话")
+            sqlsession.query(History).filter(History.chat_id==chat_id).delete()
+            sqlsession.query(Chat).filter(Chat.id==chat_id).delete()
+            session['chat_id'] = user.chat[0].id
+        sqlsession.commit()
+            
+    return {"code": 200, "msg": "删除成功"}
 
 
 def check_load_pickle():
@@ -1065,7 +1104,7 @@ def check_load_pickle():
                 user_dict['chats'][chat_id]['chat_with_history'] = user_info['chat_with_history']
                 user_dict['chats'][chat_id]['have_chat_context'] = user_info['have_chat_context']
                 all_user_dict.put(user_id, user_dict)  # 更新
-        asyncio.run(save_all_user_dict())
+        # asyncio.run(save_all_user_dict())
     else:
         with open(USER_DICT_FILE, "wb") as pickle_file:
             pickle.dump(all_user_dict, pickle_file)
@@ -1078,9 +1117,9 @@ def check_load_pickle():
 
 
 if __name__ == '__main__':
-    print("持久化存储文件路径为:", os.path.join(os.getcwd(), USER_DICT_FILE))
-    all_user_dict = LRUCache(USER_SAVE_MAX)
-    check_load_pickle()
+    # print("持久化存储文件路径为:", os.path.join(os.getcwd(), USER_DICT_FILE))
+    # all_user_dict = LRUCache(USER_SAVE_MAX)
+    # check_load_pickle()
 
     if len(API_KEY) == 0:
         # 退出程序
