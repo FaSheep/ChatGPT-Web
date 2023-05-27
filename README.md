@@ -1,14 +1,16 @@
-# 使用GPT-3.5 API创建的ChatGPT聊天页面，模型回复效果与官网的ChatGPT一致
+# Chat GPT WEB 商业版
 ## Star the [Repository](https://github.com/LiangYang666/ChatGPT-Web)  
 <details>
 <summary>TODO List</summary>
-
-- [ ] 界面适应手机  
+ 
 - [ ] 处理聊天记录更多由本地完成，即js完成聊天记录的请求
 - [ ] 添加token设置栏，按钮中设置
 - [ ] 后端添加node.js可选
-- [ ] 界面优化  
-- [ ] 代码规范化，请求返回值规范、代码文件划分  
+- [ ] 代码规范化，请求返回值规范、代码文件划分 
+- [ ] 添加APIKEY池
+- [x] 数据保存至SQL数据库 
+- [x] 界面适应手机 
+- [x] 界面优化 
 - [x] 在连续对话模式下支持多人同时使用  
 - [x] 重载历史记录
 - [x] 切换聊天模式和重置时提示
@@ -29,8 +31,8 @@
 > 代码高亮  
 > 查余额  
 
-## 演示动图
-![演示](https://user-images.githubusercontent.com/38237931/227176542-c924084c-8ceb-41cd-9e09-1f82e1d14366.gif)
+<!-- ## 演示动图
+![演示](https://user-images.githubusercontent.com/38237931/227176542-c924084c-8ceb-41cd-9e09-1f82e1d14366.gif) -->
   
 
 ## 使用前提
@@ -109,7 +111,7 @@
 
 </details>
 
-## 使用介绍
+<!-- ## 使用介绍
 - 开启程序后进入如下页面  
 ![image](https://user-images.githubusercontent.com/38237931/226513812-ff05e48f-64f2-465f-a8c2-d6ac41df46c2.png)
 - 直接输入已有用户id,或者输入new:xxx创建新id，这个id用于绑定会话，下次不同浏览器打开都可以恢复用户的聊天记录,一个浏览器31天内一般不会要求再次输入用户id，如下为创建一个新id，名为zs，下图为发送完成后自动刷新的用户页面，左侧会有一个默认对话  
@@ -120,10 +122,11 @@
 ![image](https://user-images.githubusercontent.com/38237931/226513646-fe3cd31d-3597-4c0c-aa54-fdb734916b85.png)
 - 还可以按如下添加对话
 ![image](https://user-images.githubusercontent.com/38237931/224634107-f9c43c94-f044-4323-913f-2141c081fc04.png)
-- 对话管理，当不使用该对话时，可以点击删除对话，若当前为默认对话，则只可删除聊天记录
+- 对话管理，当不使用该对话时，可以点击删除对话，若当前为默认对话，则只可删除聊天记录 -->
 
 
 ## 重要更新  
+> 2023.5.27: 余额计费制商业化  
 > 2023.3.19: 代码高亮显示  
 > 2023.3.17: 显示公式  
 > 2023.3.17: 类似于chatgpt官网，支持实时流获取，即逐字获取动态加载显示  

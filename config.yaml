@@ -10,8 +10,9 @@ API_URL: https://api.peanutsplash.top
 SQL_SERVER: 127.0.0.1
 SQL_PORT: 3306
 SQL_USERNAME: root
-SQL_PASSWORD: 123456
+SQL_PASSWORD: password
 
 # 功能性配置，可适当调整
 CHAT_CONTEXT_NUMBER_MAX: 7  # 连续对话模式下的上下文最大数量 n，即开启连续对话模式后，将上传本条消息以及之前你和GPT对话的n-1条消息
 USER_SAVE_MAX: 12  # 设置最多存储12个用户，当用户过多时可适当调大
+USER_BALANCE: 1000 # 用户初始余额
