@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -278,7 +278,7 @@
             <input type="text" placeholder="账号" name="username">
             <input type="password" placeholder="密码" name="password">
             <div class="verificationCode">
-                <input type="verificationCode" placeholder="验证码" name="verificationCode">
+                <input type="text" placeholder="验证码" name="verificationCode">
                 <img src="/imgCode" alt="" id="imgCode">
             </div>
             <button type="submit">登录</button>
@@ -294,7 +294,7 @@
             <input type="password" placeholder="密码" name="pwd1">
             <input type="password" placeholder="确认密码" name="pwd2">
             <div class="verificationCode">
-                <input type="verificationCode" placeholder="验证码" name="verificationCode2">
+                <input type="text" placeholder="验证码" name="verificationCode2">
                 <img src="/imgCode" alt="" id="imgCode2">
             </div> <button type="submit">注册</button> <!-- 将按钮设置为表单提交按钮 -->
         </form>
@@ -378,9 +378,10 @@
                 success: function (data) {
                     console.log(data);
                     if (data.code === 200) {
-                        setTimeout(function () {
-                            window.location.href = "/";
-                        }, 1000);
+                        // setTimeout(function () {
+                        //     window.location.href = "/";
+                        // }, 1000);
+                        window.location.href = "/";
                     } else {
                         alert(data.data)
                     }
@@ -407,10 +408,12 @@
                 success: function (data) {
                     console.log(data);
                     if (data.code === 200) {
-                        setTimeout(function () {
-                            showLogin()
-                            imgCode()
-                        }, 1000);
+                        // setTimeout(function () {
+                        //     showLogin()
+                        //     imgCode()
+                        // }, 1000);
+                        showLogin()
+                        imgCode()
                     } else {
                         alert(data.data)
                     }

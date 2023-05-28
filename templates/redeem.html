@@ -1,4 +1,4 @@
-<html>
+<html lang="zh-CN">
 
 <head>
   <meta charset="utf-8">
@@ -169,6 +169,43 @@
       color: white;
       font-weight: bolder;
     }
+
+    .verificationCode {
+      position: relative;
+      width: 80%;
+      margin-top: 1rem;
+    }
+
+    .verificationCode img {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 80px;
+      height: 40px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 600px) {
+
+      .verificationCode {
+        position: relative;
+        width: 90%;
+        margin-top: 1rem;
+      }
+
+      .verificationCode img {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 80px;
+        height: 30px;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+    }
   </style>
   <!-- 引入jQuery库 -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -186,10 +223,13 @@
   </div>
 
   <div class="container">
-    <h1 class="title">兑换卡密页面</h1>
+    <h1 class="title">兑换卡密</h1>
     <form class="form" action="#" method="post">
       <input class="input" type="text" name="kami" id="kami" placeholder="请输入卡密">
-      <input type="verificationCode" placeholder="验证码" name="verificationCode">
+      <div class="verificationCode">
+        <input class="input" type="text" placeholder="请输入验证码" name="verificationCode">
+        <img src="/imgCode" alt="" id="imgCode">
+      </div>
       <img src="/imgCode" alt="" id="imgCode">
       <button class="button" type="button" id="submit">兑换</button>
     </form>
@@ -208,7 +248,7 @@
 
       imgCode();
       $("#imgCode").on('click', function () {
-            imgCode();
+        imgCode();
       });
 
       // 获取用户名
@@ -235,33 +275,33 @@
           alert("请输入验证码");
         } else {
           $.ajax({
-                url: "/recharge",
-                type: "post",
-                dataType: "json",
-                data: {
-                    "key": key,
-                    "code": verificationCode
-                },
-                success: function (data) {
-                    console.log(data);
-                    if (data.code === 200) {
-                      $.get("http://127.0.0.1:5000/checkBalance", function (data) {
-                      // 清空原来的余额
-                      userBalance.empty();
-                      // 显示新的余额
-                      userBalance.append(data.data);
-                    });
-                    } else {
-                        alert(data.data)
-                    }
-                },
-                catch: function () {
-                    alert('请检查网络')
-                },
-                complete() {
-                    imgCode()
-                }
-            })
+            url: "/recharge",
+            type: "post",
+            dataType: "json",
+            data: {
+              "key": key,
+              "code": verificationCode
+            },
+            success: function (data) {
+              console.log(data);
+              if (data.code === 200) {
+                $.get("http://127.0.0.1:5000/checkBalance", function (data) {
+                  // 清空原来的余额
+                  userBalance.empty();
+                  // 显示新的余额
+                  userBalance.append(data.data);
+                });
+              } else {
+                alert(data.data)
+              }
+            },
+            catch: function () {
+              alert('请检查网络')
+            },
+            complete() {
+              imgCode()
+            }
+          })
 
 
           // 发送GET请求
@@ -285,16 +325,15 @@
     });
 
     function imgCode() {
-            $.ajax({
-                url: '/imgCode',
-                type: 'get',
-                dataType: 'image/gif',
-                complete: function (e) {
-                    $('#imgCode').attr('src', 'data:image/gif;base64,' + e.responseText);
-                    // $('#imgCode2').attr('src', 'data:image/gif;base64,' + e.responseText);
-                },
-            });
-        }
+      $.ajax({
+        url: '/imgCode',
+        type: 'get',
+        dataType: 'image/gif',
+        complete: function (e) {
+          $('#imgCode').attr('src', 'data:image/gif;base64,' + e.responseText);
+        },
+      });
+    }
   </script>
 </body>
 
