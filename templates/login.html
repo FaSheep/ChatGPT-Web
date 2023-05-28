@@ -21,6 +21,7 @@
         body {
             /* 100%窗口高度 */
             height: 100vh;
+            width: 100vw;
             /* 弹性布局 居中 */
             display: flex;
             justify-content: center;
@@ -49,9 +50,11 @@
             flex-direction: column;
             align-items: center;
             width: 350px;
-            height: 500px;
+            /* height: 500px; */
+            height: 35rem;
             /* 阴影 */
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
         }
 
         .container .tit {
@@ -204,6 +207,22 @@
         }
 
         /* 注册部分 */
+        .verificationCode {
+            position: relative;
+            width: 100%;
+        }
+
+        .verificationCode img {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+
         .container .tit {
             font-size: 26px;
             margin: 65px auto 70px auto;
@@ -258,6 +277,10 @@
         <form id="loginForm"> <!-- 添加表单元素，并定义onsubmit事件 -->
             <input type="text" placeholder="账号" name="username">
             <input type="password" placeholder="密码" name="password">
+            <div class="verificationCode">
+                <input type="verificationCode" placeholder="验证码" name="verificationCode">
+                <img src="/imgCode" alt="" id="imgCode">
+            </div>
             <button type="submit">登录</button>
         </form>
         <span>没有账号？<a href="#" id="to-register" onclick="showRegister()">去注册</a></span>
@@ -267,10 +290,13 @@
     <div id="register" class="container">
         <div class="tit">注册</div>
         <form id="registerForm"> <!-- 添加表单元素，并定义onsubmit事件 -->
-            <input type="text" placeholder="邮箱" name="email">
+            <input type="text" placeholder="用户名" name="username2">
             <input type="password" placeholder="密码" name="pwd1">
             <input type="password" placeholder="确认密码" name="pwd2">
-            <button type="submit">注册</button> <!-- 将按钮设置为表单提交按钮 -->
+            <div class="verificationCode">
+                <input type="verificationCode" placeholder="验证码" name="verificationCode2">
+                <img src="/imgCode" alt="" id="imgCode2">
+            </div> <button type="submit">注册</button> <!-- 将按钮设置为表单提交按钮 -->
         </form>
         <span>已有账号？<a href="#" id="to-login" onclick="showLogin()">去登录</a></span>
     </div>
@@ -301,15 +327,14 @@
         function showLogin() {
             loginDom.show();
             registerDom.hide();
-            console.log('1')
+            imgCode()
         }
 
         // 显示注册窗口
         function showRegister() {
             registerDom.show();
             loginDom.hide();
-            console.log('2')
-
+            imgCode()
         }
 
         // 初始化页面时，默认显示登录窗口
@@ -317,16 +342,38 @@
             showLogin();
         });
 
+        // 为验证码图片添加点击事件监听器
+        $("#imgCode").on('click', function () {
+            imgCode()
+        });
+
+        $("#imgCode2").on('click', function () {
+            imgCode()
+        });
+
+        // 获取验证码图片
+        function imgCode() {
+            $.ajax({
+                url: '/imgCode',
+                type: 'get',
+                dataType: 'image/gif',
+                complete: function (e) {
+                    $('#imgCode').attr('src', 'data:image/gif;base64,' + e.responseText);
+                    $('#imgCode2').attr('src', 'data:image/gif;base64,' + e.responseText);
+                },
+            });
+        }
 
         // 实现登录和注册的逻辑
-        function login(username, pwd) {
+        function login(username, pwd, verificationCode) {
             $.ajax({
                 url: "/signin",
                 type: "post",
                 dataType: "json",
                 data: {
                     "username": username,
-                    "password": pwd
+                    "password": pwd,
+                    "code": verificationCode
                 },
                 success: function (data) {
                     console.log(data);
@@ -340,24 +387,29 @@
                 },
                 catch: function () {
                     alert('请检查网络')
+                },
+                complete() {
+                    imgCode()
                 }
             })
         }
 
-        function register(email, pwd1) {
+        function register(username, pwd1, verificationCode2) {
             $.ajax({
                 url: "/signup",
                 type: "post",
                 dataType: "json",
                 data: {
-                    "username": email,
-                    "password": pwd1
+                    "username": username,
+                    "password": pwd1,
+                    "code": verificationCode2
                 },
                 success: function (data) {
                     console.log(data);
                     if (data.code === 200) {
                         setTimeout(function () {
                             showLogin()
+                            imgCode()
                         }, 1000);
                     } else {
                         alert(data.data)
@@ -365,19 +417,28 @@
                 },
                 catch() {
                     alert('请检查网络！')
+                },
+                complete() {
+                    imgCode()
                 }
+
             })
         }
         // 验证表单(注册)
         $("#registerForm").submit(function (e) {
             e.preventDefault(); // 阻止默认跳转行为
-            const email = $("input[name='email']").val();
+            const username = $("input[name='username2']").val();
             const pwd1 = $("input[name='pwd1']").val();
             const pwd2 = $("input[name='pwd2']").val();
-            var emailRegex = /[^a-zA-Z0-9]+/; // 定义email的正则表达式
+            const verificationCode2 = $("input[name='verificationCode2']").val();
+            console.log(username)
+            if (username == "") {
+                alert("请输入用户名");
+                return false;
+            }
 
-            if (email == "") {
-                alert("请输入邮箱");
+            if (verificationCode2 == "") {
+                alert("请输入验证码");
                 return false;
             }
 
@@ -390,11 +451,7 @@
                 alert("两次输入的密码不一致，请重新输入");
                 return false;
             }
-            if (emailRegex.test(email)) {
-                alert("密码只能由大小写字母和数字组成");
-                return false;
-            }
-            register(email, pwd1)
+            register(username, pwd1, verificationCode2)
             // TODO: 发送请求注册用户
             return true;
         });
@@ -403,9 +460,15 @@
             e.preventDefault(); // 阻止默认跳转行为
             const username = $("input[name='username']").val();
             const pwd = $("input[name='password']").val();
+            const verificationCode = $("input[name='verificationCode']").val();
 
             if (username == "") {
                 alert("请输入账号");
+                return false;
+            }
+
+            if (verificationCode == "") {
+                alert("请输入验证码");
                 return false;
             }
 
@@ -414,7 +477,7 @@
                 return false;
             }
             // TODO: 发送请求登陆用户
-            login(username, pwd)
+            login(username, pwd, verificationCode)
             // return true;
         });
     </script>

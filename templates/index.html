@@ -674,7 +674,7 @@
             top: 40px;
             background-color: #f9f9f9;
             min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
             z-index: 10;
         }
 
@@ -726,7 +726,7 @@
     <div class="all-container">
         <div class="left-container">
             <div class="chat-list">
-                <!-- <div class="newchat" id="newchat">添加新对话</div> -->
+                <div class="newchat" id="newchat">添加新对话</div>
             </div>
         </div>
         <div class="right-container">
@@ -840,7 +840,7 @@
     $(document).on("mouseleave", ".bubble-left", function () {
         // 若进入了菜单按钮 不关闭
         if (event.toElement.className === "menu-btn") {
-            return;e
+            return; e
         } else {
             $("#menu").css("display", "none");
         }
@@ -951,6 +951,35 @@
         })
     }
 
+    // function isLogin() {
+    //     var isLogin = false
+    //     $.ajax({
+    //         url: "/isLogin",
+    //         type: "Get",
+    //         dataType: "json",
+    //         success: function (data) {
+    //             isLogin = data.data
+    //             console.log(isLogin)
+    //         }
+    //     })
+    //     return isLogin
+    // }
+    function isLogin() {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: "/isLogin",
+                type: "Get",
+                dataType: "json",
+                success: function (data) {
+                    var isLogin = data.data;
+                    resolve(isLogin);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    reject(errorThrown);
+                }
+            });
+        });
+    }
     function renderHeadInfo() {
         if (selectedChatId === undefined) {
             $(".head-chat-name").text("未绑定用户");
@@ -1300,18 +1329,18 @@
         }
     });
 
-
-    
-    // btn.onclick = function() { if (menu.style.display == "block") { menu.style.display = "none"; } else { menu.style.display = "block"; } } 
     $('#toggle-setting-btn').click(function () {
-        // alert('dianji')
-        // var btn = document.getElementById("toggle-setting-btn");
-        // var menu = document.getElementById("menu");
-        if ($("#user-menu").css("display") == "block") {
-            $("#user-menu").css("display", "none");
-        } else {
-            $("#user-menu").css("display", "block");
-        }
+        isLogin().then(function (result) {
+            if (result) {
+                if ($("#user-menu").css("display") == "block") {
+                    $("#user-menu").css("display", "none");
+                } else {
+                    $("#user-menu").css("display", "block");
+                }
+            } else {
+                window.location.href = '/login';
+            }
+        })
     });
 </script>
 
