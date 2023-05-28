@@ -189,9 +189,11 @@
     <h1 class="title">兑换卡密页面</h1>
     <form class="form" action="#" method="post">
       <input class="input" type="text" name="kami" id="kami" placeholder="请输入卡密">
+      <input type="verificationCode" placeholder="验证码" name="verificationCode">
+      <img src="/imgCode" alt="" id="imgCode">
       <button class="button" type="button" id="submit">兑换</button>
     </form>
-    <a class="link" href="www.kami.com" target="_blank">没有卡密？点击这里购买</a>
+    <a class="link" href="https://afdian.net/item/4c4b537cfbe911ed8def52540025c377" target="_blank">没有卡密？点击这里购买</a>
   </div>
   <!-- 添加点击事件和发送请求的逻辑 -->
   <script>
@@ -202,6 +204,12 @@
       var submit = $("#submit");
       var userName = $(".user-name");
       var userBalance = $(".user-balance");
+      var codetext = $("input[name='verificationCode']");
+
+      imgCode();
+      $("#imgCode").on('click', function () {
+            imgCode();
+      });
 
       // 获取用户名
       $.get("http://127.0.0.1:5000/getName", function (data) {
@@ -219,24 +227,55 @@
       submit.click(function () {
         // 获取卡密
         var key = kami.val();
-
+        const verificationCode = codetext.val();
         // 判断卡密是否为空
         if (key == "") {
           alert("请输入卡密");
+        } else if (verificationCode == "") {
+          alert("请输入验证码");
         } else {
+          $.ajax({
+                url: "/recharge",
+                type: "post",
+                dataType: "json",
+                data: {
+                    "key": key,
+                    "code": verificationCode
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data.code === 200) {
+                      $.get("http://127.0.0.1:5000/checkBalance", function (data) {
+                      // 清空原来的余额
+                      userBalance.empty();
+                      // 显示新的余额
+                      userBalance.append(data.data);
+                    });
+                    } else {
+                        alert(data.data)
+                    }
+                },
+                catch: function () {
+                    alert('请检查网络')
+                },
+                complete() {
+                    imgCode()
+                }
+            })
+
 
           // 发送GET请求
-          $.get("http://127.0.0.1:5000/recharge", { key: key }, function (data) {
-            // 处理响应数据
-            alert(data.data);
-            // 新增的更新余额的功能
-            $.get("http://127.0.0.1:5000/checkBalance", function (data) {
-              // 清空原来的余额
-              userBalance.empty();
-              // 显示新的余额
-              userBalance.append(data.data);
-            });
-          });
+          // $.get("http://127.0.0.1:5000/recharge", { key: key, code: verificationCode }, function (data) {
+          //   // 处理响应数据
+          //   alert(data.data);
+          //   // 新增的更新余额的功能
+          //   $.get("http://127.0.0.1:5000/checkBalance", function (data) {
+          //     // 清空原来的余额
+          //     userBalance.empty();
+          //     // 显示新的余额
+          //     userBalance.append(data.data);
+          //   });
+          // });
         }
 
         // 阻止表单默认提交行为
@@ -244,6 +283,18 @@
 
       });
     });
+
+    function imgCode() {
+            $.ajax({
+                url: '/imgCode',
+                type: 'get',
+                dataType: 'image/gif',
+                complete: function (e) {
+                    $('#imgCode').attr('src', 'data:image/gif;base64,' + e.responseText);
+                    // $('#imgCode2').attr('src', 'data:image/gif;base64,' + e.responseText);
+                },
+            });
+        }
   </script>
 </body>
 

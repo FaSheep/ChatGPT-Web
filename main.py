@@ -29,7 +29,6 @@ with open("config.yaml", "r", encoding="utf-8") as f:
     PORT = config['PORT']
     API_KEY = config['OPENAI_API_KEY']
     CHAT_CONTEXT_NUMBER_MAX = config['CHAT_CONTEXT_NUMBER_MAX']     # 连续对话模式下的上下文最大数量 n，即开启连续对话模式后，将上传本条消息以及之前你和GPT对话的n-1条消息
-    USER_SAVE_MAX = config['USER_SAVE_MAX']     # 设置最多存储n个用户，当用户过多时可适当调大
     SQL_SEVER = config['SQL_SERVER']
     SQL_PORT = config['SQL_PORT']
     SQL_USERNAME = config['SQL_USERNAME']
@@ -49,10 +48,9 @@ SQL_SEVER = os.getenv("SQL_SERVER", default=SQL_SEVER)
 SQL_PORT = os.getenv("SQL_PORT", default=SQL_PORT)
 SQL_USERNAME = os.getenv("SQL_USERNAME", default=SQL_USERNAME)
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", default=SQL_PASSWORD)
-USER_BALANCE = os.getenv("SQL_PASSWORD", default=USER_BALANCE)
+USER_BALANCE = os.getenv("SQL_PASSWORD", default=USER_BALANCE) # 用户初始余额
 
 STREAM_FLAG = True  # 是否开启流式推送
-USER_DICT_FILE = "all_user_dict_v2.pkl"  # 用户信息存储文件（包含版本）
 
 Base = declarative_base()
 class User(Base):
