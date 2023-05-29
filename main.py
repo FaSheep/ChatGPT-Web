@@ -96,7 +96,7 @@ class Key(Base):
     balance = Column(Integer)
 
 engine = create_engine(
-    f"mysql://{SQL_USERNAME}:{SQL_PASSWORD}@{SQL_SEVER}:{SQL_PORT}/chat?charset=utf8",
+    f"mysql+pymysql://{SQL_USERNAME}:{SQL_PASSWORD}@{SQL_SEVER}:{SQL_PORT}/chat?charset=utf8",
     echo = True,
     future=True
 )
