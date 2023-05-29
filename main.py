@@ -337,9 +337,9 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, user_
                 if not stream_content=="":
                     all_msg = str()
                     for msg in message_context:
-                        all_msg.join(msg['content'])
-                        all_msg.join(' ')
-                    all_msg.join(stream_content)
+                        all_msg += msg['content']
+                        all_msg += ' '
+                    all_msg += stream_content
                     user = sqlsession.query(User).filter(User.id==user_id).one()
                     chat = sqlsession.query(Chat).filter(Chat.id==chat_id).one()
                     chat.history.append(History(content=stream_content, role="assistant"))
