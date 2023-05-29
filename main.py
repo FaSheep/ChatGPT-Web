@@ -48,7 +48,7 @@ SQL_SEVER = os.getenv("SQL_SERVER", default=SQL_SEVER)
 SQL_PORT = os.getenv("SQL_PORT", default=SQL_PORT)
 SQL_USERNAME = os.getenv("SQL_USERNAME", default=SQL_USERNAME)
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", default=SQL_PASSWORD)
-USER_BALANCE = os.getenv("SQL_PASSWORD", default=USER_BALANCE) # 用户初始余额
+USER_BALANCE = os.getenv("USER_BALANCE", default=USER_BALANCE) # 用户初始余额
 
 STREAM_FLAG = True  # 是否开启流式推送
 
@@ -266,9 +266,9 @@ def handle_messages_get_response(message, send_time, user_id, chat_id, chat_with
 
         all_msg = str()
         for msg in message_context:
-            all_msg.join(msg['content'])
-            all_msg.join(' ')
-        all_msg.join(response)
+            all_msg += (msg['content'])
+            all_msg += (' ')
+        all_msg += (response)
         count = 0
         for s in all_msg:
             if '\u4e00' <= s <= '\u9fff':

@@ -252,13 +252,13 @@
       });
 
       // 获取用户名
-      $.get("http://127.0.0.1:5000/getName", function (data) {
+      $.get("/getName", function (data) {
         // 显示用户名
         userName.append(data.data);
       });
 
       // 获取余额
-      $.get("http://127.0.0.1:5000/checkBalance", function (data) {
+      $.get("/checkBalance", function (data) {
         // 显示余额
         userBalance.append(data.data);
       });
@@ -285,7 +285,7 @@
             success: function (data) {
               console.log(data);
               if (data.code === 200) {
-                $.get("http://127.0.0.1:5000/checkBalance", function (data) {
+                $.get("/checkBalance", function (data) {
                   // 清空原来的余额
                   userBalance.empty();
                   // 显示新的余额
