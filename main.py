@@ -7,6 +7,7 @@ import string
 import requests
 import os
 import uuid
+import tiktoken
 import yaml
 import io
 import base64
@@ -269,11 +270,10 @@ def handle_messages_get_response(message, send_time, user_id, chat_id, chat_with
             all_msg += (msg['content'])
             all_msg += (' ')
         all_msg += (response)
-        count = 0
-        for s in all_msg:
-            if '\u4e00' <= s <= '\u9fff':
-                count += 1
-        user.balance = max(user.balance - (len(response.split()) + count), 0)
+        
+        # OPEN AI 官方token计算
+        encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')
+        user.balance = max(user.balance - len(encoding.encode(all_msg)), 0)
 
         sqlsession.commit()
 
@@ -343,11 +343,10 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, user_
                     user = sqlsession.query(User).filter(User.id==user_id).one()
                     chat = sqlsession.query(Chat).filter(Chat.id==chat_id).one()
                     chat.history.append(History(content=stream_content, role="assistant"))
-                    count = 0
-                    for s in all_msg:
-                        if '\u4e00' <= s <= '\u9fff':
-                            count += 1
-                    user.balance = max(user.balance - (len(stream_content.split()) + count), 0)
+
+                    # OPEN AI 官方token计算
+                    encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')
+                    user.balance = max(user.balance - len(encoding.encode(all_msg)), 0)
                     sqlsession.commit()
 
     except Exception as e:
@@ -797,4 +796,4 @@ if __name__ == '__main__':
         # 退出程序
         print("请在openai官网注册账号，获取api_key填写至程序内或命令行参数中")
         exit()
-    app.run(host="0.0.0.0", port=PORT, debug=False)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
