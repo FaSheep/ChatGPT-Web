@@ -10,6 +10,7 @@ SQL_SERVER: 127.0.0.1
 SQL_PORT: 3306
 SQL_USERNAME: root
 SQL_PASSWORD: password
+DATABASE: chat
 
 # 功能性配置，可适当调整
 CHAT_CONTEXT_NUMBER_MAX: 7  # 连续对话模式下的上下文最大数量 n，即开启连续对话模式后，将上传本条消息以及之前你和GPT对话的n-1条消息

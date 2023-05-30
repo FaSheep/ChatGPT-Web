@@ -34,6 +34,7 @@ with open("config.yaml", "r", encoding="utf-8") as f:
     SQL_PORT = config['SQL_PORT']
     SQL_USERNAME = config['SQL_USERNAME']
     SQL_PASSWORD = config['SQL_PASSWORD']
+    DATABASE = config['DATABASE']
     API_URL = config['API_URL']
     USER_BALANCE = config['USER_BALANCE']
 
@@ -49,6 +50,7 @@ SQL_SEVER = os.getenv("SQL_SERVER", default=SQL_SEVER)
 SQL_PORT = os.getenv("SQL_PORT", default=SQL_PORT)
 SQL_USERNAME = os.getenv("SQL_USERNAME", default=SQL_USERNAME)
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", default=SQL_PASSWORD)
+DATABASE = os.getenv("DATABASE", default=DATABASE)
 USER_BALANCE = os.getenv("USER_BALANCE", default=USER_BALANCE) # 用户初始余额
 
 STREAM_FLAG = True  # 是否开启流式推送
@@ -97,7 +99,7 @@ class Key(Base):
     balance = Column(Integer)
 
 engine = create_engine(
-    f"mysql+pymysql://{SQL_USERNAME}:{SQL_PASSWORD}@{SQL_SEVER}:{SQL_PORT}/chat?charset=utf8",
+    f"mysql+pymysql://{SQL_USERNAME}:{SQL_PASSWORD}@{SQL_SEVER}:{SQL_PORT}/{DATABASE}?charset=utf8",
     echo = True,
     future=True
 )
