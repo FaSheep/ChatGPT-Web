@@ -142,7 +142,6 @@
       }
 
       .user-name::before {
-        background-image: url("https://cdn-icons-png.flaticon.com/512/149/149071.png");
         /* 用户图标 */
         background-size: auto;
         background-repeat: no-repeat;
@@ -150,7 +149,6 @@
       }
 
       .user-balance::before {
-        background-image: url("https://cdn-icons-png.flaticon.com/512/138/138228.png");
         /* 钱包图标 */
         background-size: auto;
         background-repeat: no-repeat;
@@ -208,7 +206,7 @@
     }
   </style>
   <!-- 引入jQuery库 -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 </head>
 
 <body>
