@@ -405,23 +405,36 @@
             padding: 3px 8px 3px 8px;
         }
 
-        .markdown table tr th, .markdown table tr td {
+        .markdown table tr th,
+        .markdown table tr td {
             margin: 0;
             border-right: 2px solid gray;
             border-bottom: 2px solid gray;
             padding: 3px 8px 3px 8px;
         }
 
-        .markdown table tr th:first-child, .markdown table tr td:first-child {
+        .markdown table tr th:first-child,
+        .markdown table tr td:first-child {
             border-left: 2px solid gray;
             padding: 3px 8px 3px 8px;
         }
 
         /* 分别设置 [左上, 右上, 右下, 左下] 的圆角 */
-        .markdown table tr:first-child th:first-child {border-top-left-radius: 0.6rem;}
-        .markdown table tr:first-child th:last-child {border-top-right-radius: 0.6rem;}
-        .markdown table tr:last-child td:last-child {border-bottom-right-radius: 0.6rem;}
-        .markdown table tr:last-child td:first-child {border-bottom-left-radius: 0.6rem;}
+        .markdown table tr:first-child th:first-child {
+            border-top-left-radius: 0.6rem;
+        }
+
+        .markdown table tr:first-child th:last-child {
+            border-top-right-radius: 0.6rem;
+        }
+
+        .markdown table tr:last-child td:last-child {
+            border-bottom-right-radius: 0.6rem;
+        }
+
+        .markdown table tr:last-child td:first-child {
+            border-bottom-left-radius: 0.6rem;
+        }
 
         .markdown ol {
             list-style-type: decimal;
@@ -1141,9 +1154,9 @@
     function codeCopy(obj, isCode) {
         let btn = $(obj);
         console.log("复制代码");
-        
+
         let code;
-        
+
         var temptext = btn.text();
         btn.text("");
         if (isCode) {
@@ -1304,15 +1317,14 @@
     });
     $('#del-btn').click(function () {
         $.get("/deleteHistory", function (data) {
-            console.log(data);
+            location.reload();
         });
-        window.location.reload();
     });
     $('#chmod-btn').click(function () {
         if ($("#chmod-btn").text() === "当前为普通对话") {
-                if (!confirm("确认到连续对话模式吗？连续对话将消耗大量token")) {
-                    return;
-                }
+            if (!confirm("确认到连续对话模式吗？连续对话将消耗大量token")) {
+                return;
+            }
             $.get("/changeMode/continuous", function (data) {
                 if (data.code === -1) {
                     alert(data.msg)
