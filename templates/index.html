@@ -949,7 +949,9 @@
 <script>
     window.onload = function () { //页面加载完成后，自动将光标定位至输入框
         document.getElementById('textarea').focus();
-        $('#1').click();
+        if($('.chat-list div').length > 1) {
+            $('.chat-list div').first().click();
+        }
     }
 
     let newchat = $("#newchat");
@@ -1040,8 +1042,11 @@
         console.log("请输入会话名称");
         let name = prompt("请输入会话名称");
         if (name === null) {
+            return;
+        } else if (name === "") {
             name = '新的会话';
         }
+
         $.ajax({
             url: "/newChat",
             type: "Get",
@@ -1311,7 +1316,7 @@
     });
     $('#del-btn').click(function () {
         $.get("/deleteHistory", function (data) {
-            window.location.reload();
+            location.reload();
         });
     });
     $('#chmod-btn').click(function () {
