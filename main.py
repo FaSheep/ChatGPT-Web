@@ -539,6 +539,7 @@ def sign_up():
     
     # 检测验证码
     if not code == session['imageCode'].lower():
+        session['imageCode'] = imageCode().geneText()
         return {"code": 400, "data": "验证码错误"}
 
     with Session(engine) as sqlsession:
@@ -556,6 +557,7 @@ def sign_up():
         user.chat.append(Chat(name="默认会话", history=[]))
         sqlsession.add(user)
         sqlsession.commit()
+    session['imageCode'] = imageCode().geneText()
     return {"code": 200, "data": "sign up successfully"}
 
 # 登录接口
@@ -576,6 +578,7 @@ def sign_in():
     
     # 检测验证码
     if not code == session['imageCode'].lower():
+        session['imageCode'] = imageCode().geneText()
         return {"code": 400, "data": "验证码错误"}
 
     with Session(engine) as sqlsession:
@@ -593,6 +596,7 @@ def sign_in():
             session['chat_with_history'] = False
             return {"code": 200, "data": "sign in successfully"}
         else:
+            session['imageCode'] = imageCode().geneText()
             return {"code": 400, "data": "error password"}
     
 @app.route('/signOut', methods=['GET', 'POST'])
@@ -623,14 +627,17 @@ def recharge():
     key = request.values.get("key").strip()
     code = request.values.get("code").strip().lower()
     if not code == session['imageCode'].lower():
+        session['imageCode'] = imageCode().geneText()
         return {"code": 400, "data": "验证码错误"}
     with Session(engine) as sqlsession:
         query = sqlsession.query(Key).filter(Key.value==key)
         if not sqlsession.query(query.exists()).scalar():
+            session['imageCode'] = imageCode().geneText()
             return {"code": 400, "data": "key not exist"}
         key_obj = sqlsession.query(Key).filter(Key.value==key).one()
         user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         if key_obj.balance <= 0:
+            session['imageCode'] = imageCode().geneText()
             return {"code": 400, "data": "key already used"}
         user.balance += key_obj.balance
         key_obj.balance = 0
