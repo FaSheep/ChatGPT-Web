@@ -2,8 +2,7 @@ flask
 requests
 PyYaml
 pysocks
-SQLAlchemy~=1.4.0
+SQLAlchemy==1.4.0 # 别的版本连接azure数据库会报错
 pillow
 PyMySQL
 tiktoken
-cryptography
