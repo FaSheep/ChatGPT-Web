@@ -11,13 +11,13 @@ import tiktoken
 import yaml
 import io
 import base64
-from io import BytesIO
 from flask import Flask, make_response, redirect, render_template, request, session
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import declarative_base, Session, relationship
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.dialects.mysql import LONGTEXT
 from PIL import Image, ImageFont, ImageDraw
+from urllib.parse import quote_plus as urlquote
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -99,7 +99,7 @@ class Key(Base):
     balance = Column(Integer)
 
 engine = create_engine(
-    f"mysql+pymysql://{SQL_USERNAME}:{SQL_PASSWORD}@{SQL_SEVER}:{SQL_PORT}/{DATABASE}?charset=utf8",
+    f"mysql+pymysql://{SQL_USERNAME}:{urlquote(SQL_PASSWORD)}@{SQL_SEVER}:{SQL_PORT}/{DATABASE}?charset=utf8",
     echo = True,
     future=True
 )
