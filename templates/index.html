@@ -759,7 +759,7 @@
             <div class="head-area">
                 <div class="head-left">
                     <div class="avatar">
-                        <img src="{{ url_for('static', filename='chatgpt.png') }}" alt="">
+                        <svg style="width: 35px;height: 35px;fill: black;" viewBox="140 140 520 520" xmlns="http://www.w3.org/2000/svg"><path d="m617.24 354a126.36 126.36 0 0 0 -10.86-103.79 127.8 127.8 0 0 0 -137.65-61.32 126.36 126.36 0 0 0 -95.31-42.49 127.81 127.81 0 0 0 -121.92 88.49 126.4 126.4 0 0 0 -84.5 61.3 127.82 127.82 0 0 0 15.72 149.86 126.36 126.36 0 0 0 10.86 103.79 127.81 127.81 0 0 0 137.65 61.32 126.36 126.36 0 0 0 95.31 42.49 127.81 127.81 0 0 0 121.96-88.54 126.4 126.4 0 0 0 84.5-61.3 127.82 127.82 0 0 0 -15.76-149.81zm-190.66 266.49a94.79 94.79 0 0 1 -60.85-22c.77-.42 2.12-1.16 3-1.7l101-58.34a16.42 16.42 0 0 0 8.3-14.37v-142.39l42.69 24.65a1.52 1.52 0 0 1 .83 1.17v117.92a95.18 95.18 0 0 1 -94.97 95.06zm-204.24-87.23a94.74 94.74 0 0 1 -11.34-63.7c.75.45 2.06 1.25 3 1.79l101 58.34a16.44 16.44 0 0 0 16.59 0l123.31-71.2v49.3a1.53 1.53 0 0 1 -.61 1.31l-102.1 58.95a95.16 95.16 0 0 1 -129.85-34.79zm-26.57-220.49a94.71 94.71 0 0 1 49.48-41.68c0 .87-.05 2.41-.05 3.48v116.68a16.41 16.41 0 0 0 8.29 14.36l123.31 71.19-42.69 24.65a1.53 1.53 0 0 1 -1.44.13l-102.11-59a95.16 95.16 0 0 1 -34.79-129.81zm350.74 81.62-123.31-71.2 42.69-24.64a1.53 1.53 0 0 1 1.44-.13l102.11 58.95a95.08 95.08 0 0 1 -14.69 171.55c0-.88 0-2.42 0-3.49v-116.68a16.4 16.4 0 0 0 -8.24-14.36zm42.49-63.95c-.75-.46-2.06-1.25-3-1.79l-101-58.34a16.46 16.46 0 0 0 -16.59 0l-123.31 71.2v-49.3a1.53 1.53 0 0 1 .61-1.31l102.1-58.9a95.07 95.07 0 0 1 141.19 98.44zm-267.11 87.87-42.7-24.65a1.52 1.52 0 0 1 -.83-1.17v-117.92a95.07 95.07 0 0 1 155.9-73c-.77.42-2.11 1.16-3 1.7l-101 58.34a16.41 16.41 0 0 0 -8.3 14.36zm23.19-50 54.92-31.72 54.92 31.7v63.42l-54.92 31.7-54.92-31.7z"></path></svg>
                     </div>
                     <div class="head-info">
                         <div class="head-chat-name">默认对话</div>
@@ -830,100 +830,6 @@
         xhtml: false
     });
 </script>
-<!-- <script>
-    // 当鼠标移动到 bubble-left时显示复制按钮
-    // $(document).on("mouseover", ".bubble-left", function (event) {
-    //     let copyBtn = $("#menu");
-    //     // let copyBtnItem = $("#copy-btn");
-    //     let dialogueButtonGroup = $(".dialogueButtonGroup");
-    //     // console.log(dialogueButtonGroup)
-    //     let offset = $(this).offset();
-    //     // 右上角显示
-    //     // $("#resend-btn").hide();
-    //     // copyBtnItem.show();
-    //     copyBtn.css("display", "block");
-    //     copyBtn.css("top", offset.top);
-    //     copyBtn.css("left", offset.left + $(this).width() - copyBtnItem.width() + 10);
-    //     // 设置复制内容
-    //     console.log($(this).text())
-    //     // copyBtnItem.attr("data-clipboard-text", $(this).text());
-    // });
-    // 当鼠标移动到 item-left时
-    // $(document).on("mouseover", ".item-left", function (event) {
-    //     let dialogueButtonGroup = $(".dialogueButtonGroup");
-    //     let itemLeft = (this);
-    //     console.log(itemLeft)
-    //     // console.log(dialogueButtonGroup)
-    // });
-    // 移出bubble-left和菜单按钮时才恢复
-    // $(document).on("mouseleave", ".bubble-left", function () {
-    //     // 若进入了菜单按钮 不关闭
-    //     if (event.toElement.className === "menu-btn") {
-    //         return; e
-    //     } else {
-    //         $("#menu").css("display", "none");
-    //     }
-    // });
-    // $(document).on("mouseleave", "#menu", function () {
-    //     $("#menu").css("display", "none");
-    // });
-    // $(document).on("click", "#copy-btn", function () {
-    //     let clipboard = new ClipboardJS('#copy-btn');
-    //     clipboard.on('success', function (e) {
-    //         console.log(e);
-    //         // 将显示字符更改为复制成功，4秒后改回
-    //         $("#copy-btn").text("复制成功!");
-    //         setTimeout(function () {
-    //             $("#copy-btn").text("复制");
-    //         }, 4000);
-    //     });
-    //     clipboard.on('error', function (e) {
-    //         console.log(e);
-    //     });
-    //     // 光标回归
-    //     $("#textarea").focus();
-    // });
-
-    // 当鼠标移动到 bubble-right时显示重发按钮
-    // $(document).on("mouseover", ".bubble-right", function () {
-    //     let menu = $("#menu");
-    //     // let resendBtn = $("#resend-btn");
-    //     let offset = $(this).offset();
-    //     // 右上角显示
-    //     // $("#copy-btn").hide();
-    //     // resendBtn.show();
-    //     menu.css("display", "block");
-    //     menu.css("top", offset.top);
-    //     menu.css("left", offset.left + $(this).width() - resendBtn.width() + 10);
-    //     // 设置复制内容
-    //     // resendBtn.attr("data-clipboard-text", $(this).text());
-    // });
-    // 移出bubble-right和菜单按钮时才恢复
-    // $(document).on("mouseleave", ".bubble-right", function () {
-    //     // 若进入了菜单按钮 不关闭
-    //     if (event.toElement.className === "menu-btn") {
-    //         return;
-    //     } else {
-    //         $("#menu").css("display", "none");
-    //     }
-    // });
-    // $(document).on("mouseleave", "#menu", function () { // 移出菜单按钮
-    //     $("#menu").css("display", "none");
-    // });
-    // $(document).on("click", "#resend-btn", function () {
-    //     // 渲染到输入框
-    //     let text = $(this).attr("data-clipboard-text");
-    //     $("#textarea").val(text);
-    //     // 模拟点击事件
-    //     $("#send-btn").click();
-    //     // 光标回归
-    //     $("#textarea").focus();
-    // });
-    // $(document).on("mousewheel DOMMouseScroll", function (e) {
-    //     // 当鼠标滚动时，隐藏菜单
-    //     $("#menu").css("display", "none");
-    // });
-</script> -->
 
 <script>
     MathJax.Hub.Config({ // 公式配置
@@ -1122,14 +1028,13 @@
                 for (var i = 0; i < messages.length; i++) {
                     if (messages[i].role === "user") {
                         html +=
-                            '<div class="item item-right"><div class="avatar"><img src="./static/people.jpg" /></div><div class="bubble bubble-right">' +
+                            '<div class="item item-right"><div class="avatar"><svg style="width: 35px;height: 35px;fill: black;" viewBox="140 140 520 520" xmlns="http://www.w3.org/2000/svg"><path d="m617.24 354a126.36 126.36 0 0 0 -10.86-103.79 127.8 127.8 0 0 0 -137.65-61.32 126.36 126.36 0 0 0 -95.31-42.49 127.81 127.81 0 0 0 -121.92 88.49 126.4 126.4 0 0 0 -84.5 61.3 127.82 127.82 0 0 0 15.72 149.86 126.36 126.36 0 0 0 10.86 103.79 127.81 127.81 0 0 0 137.65 61.32 126.36 126.36 0 0 0 95.31 42.49 127.81 127.81 0 0 0 121.96-88.54 126.4 126.4 0 0 0 84.5-61.3 127.82 127.82 0 0 0 -15.76-149.81zm-190.66 266.49a94.79 94.79 0 0 1 -60.85-22c.77-.42 2.12-1.16 3-1.7l101-58.34a16.42 16.42 0 0 0 8.3-14.37v-142.39l42.69 24.65a1.52 1.52 0 0 1 .83 1.17v117.92a95.18 95.18 0 0 1 -94.97 95.06zm-204.24-87.23a94.74 94.74 0 0 1 -11.34-63.7c.75.45 2.06 1.25 3 1.79l101 58.34a16.44 16.44 0 0 0 16.59 0l123.31-71.2v49.3a1.53 1.53 0 0 1 -.61 1.31l-102.1 58.95a95.16 95.16 0 0 1 -129.85-34.79zm-26.57-220.49a94.71 94.71 0 0 1 49.48-41.68c0 .87-.05 2.41-.05 3.48v116.68a16.41 16.41 0 0 0 8.29 14.36l123.31 71.19-42.69 24.65a1.53 1.53 0 0 1 -1.44.13l-102.11-59a95.16 95.16 0 0 1 -34.79-129.81zm350.74 81.62-123.31-71.2 42.69-24.64a1.53 1.53 0 0 1 1.44-.13l102.11 58.95a95.08 95.08 0 0 1 -14.69 171.55c0-.88 0-2.42 0-3.49v-116.68a16.4 16.4 0 0 0 -8.24-14.36zm42.49-63.95c-.75-.46-2.06-1.25-3-1.79l-101-58.34a16.46 16.46 0 0 0 -16.59 0l-123.31 71.2v-49.3a1.53 1.53 0 0 1 .61-1.31l102.1-58.9a95.07 95.07 0 0 1 141.19 98.44zm-267.11 87.87-42.7-24.65a1.52 1.52 0 0 1 -.83-1.17v-117.92a95.07 95.07 0 0 1 155.9-73c-.77.42-2.11 1.16-3 1.7l-101 58.34a16.41 16.41 0 0 0 -8.3 14.36zm23.19-50 54.92-31.72 54.92 31.7v63.42l-54.92 31.7-54.92-31.7z"></path></svg></div><div class="bubble bubble-right">' +
                             messages[i]
                                 .content +
                             '</div></div>';
                     } else if (messages[i].role === "assistant") {
                         html +=
-                            // '<div class="item item-left"><div class="dialogueButtonGroup"><span>重试</span><span>复制</span></div><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown">' +
-                            '<div class="item item-left"><div class="dialogueButtonGroup"><span class="copy-btn" onclick="codeCopy(this,false)">复制</span></div><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown">' +
+                            '<div class="item item-left"><div class="dialogueButtonGroup"><span class="copy-btn" onclick="codeCopy(this,false)">复制</span></div><div class="avatar"><svg style="width: 35px;height: 35px;fill: black;" viewBox="140 140 520 520" xmlns="http://www.w3.org/2000/svg"><path d="m617.24 354a126.36 126.36 0 0 0 -10.86-103.79 127.8 127.8 0 0 0 -137.65-61.32 126.36 126.36 0 0 0 -95.31-42.49 127.81 127.81 0 0 0 -121.92 88.49 126.4 126.4 0 0 0 -84.5 61.3 127.82 127.82 0 0 0 15.72 149.86 126.36 126.36 0 0 0 10.86 103.79 127.81 127.81 0 0 0 137.65 61.32 126.36 126.36 0 0 0 95.31 42.49 127.81 127.81 0 0 0 121.96-88.54 126.4 126.4 0 0 0 84.5-61.3 127.82 127.82 0 0 0 -15.76-149.81zm-190.66 266.49a94.79 94.79 0 0 1 -60.85-22c.77-.42 2.12-1.16 3-1.7l101-58.34a16.42 16.42 0 0 0 8.3-14.37v-142.39l42.69 24.65a1.52 1.52 0 0 1 .83 1.17v117.92a95.18 95.18 0 0 1 -94.97 95.06zm-204.24-87.23a94.74 94.74 0 0 1 -11.34-63.7c.75.45 2.06 1.25 3 1.79l101 58.34a16.44 16.44 0 0 0 16.59 0l123.31-71.2v49.3a1.53 1.53 0 0 1 -.61 1.31l-102.1 58.95a95.16 95.16 0 0 1 -129.85-34.79zm-26.57-220.49a94.71 94.71 0 0 1 49.48-41.68c0 .87-.05 2.41-.05 3.48v116.68a16.41 16.41 0 0 0 8.29 14.36l123.31 71.19-42.69 24.65a1.53 1.53 0 0 1 -1.44.13l-102.11-59a95.16 95.16 0 0 1 -34.79-129.81zm350.74 81.62-123.31-71.2 42.69-24.64a1.53 1.53 0 0 1 1.44-.13l102.11 58.95a95.08 95.08 0 0 1 -14.69 171.55c0-.88 0-2.42 0-3.49v-116.68a16.4 16.4 0 0 0 -8.24-14.36zm42.49-63.95c-.75-.46-2.06-1.25-3-1.79l-101-58.34a16.46 16.46 0 0 0 -16.59 0l-123.31 71.2v-49.3a1.53 1.53 0 0 1 .61-1.31l102.1-58.9a95.07 95.07 0 0 1 141.19 98.44zm-267.11 87.87-42.7-24.65a1.52 1.52 0 0 1 -.83-1.17v-117.92a95.07 95.07 0 0 1 155.9-73c-.77.42-2.11 1.16-3 1.7l-101 58.34a16.41 16.41 0 0 0 -8.3 14.36zm23.19-50 54.92-31.72 54.92 31.7v63.42l-54.92 31.7-54.92-31.7z"></path></svg></div><div class="bubble bubble-left markdown">' +
                             marked.marked(messages[i].content) + '</div></div>';
                     } else if (messages[i].role === "system") {
                         html += '<div class="item item-center"><span>' + messages[i].content +
@@ -1229,7 +1134,7 @@
             send_time_str = get_time_str(send_time);
         }
         html +=
-            '<div class="item item-right"><div class="avatar"><img src="./static/people.jpg" /></div><div class="bubble bubble-right markdown">' +
+            '<div class="item item-right"><div class="avatar"><svg style="width: 35px;height: 35px;fill: black;" viewBox="140 140 520 520" xmlns="http://www.w3.org/2000/svg"><path d="m617.24 354a126.36 126.36 0 0 0 -10.86-103.79 127.8 127.8 0 0 0 -137.65-61.32 126.36 126.36 0 0 0 -95.31-42.49 127.81 127.81 0 0 0 -121.92 88.49 126.4 126.4 0 0 0 -84.5 61.3 127.82 127.82 0 0 0 15.72 149.86 126.36 126.36 0 0 0 10.86 103.79 127.81 127.81 0 0 0 137.65 61.32 126.36 126.36 0 0 0 95.31 42.49 127.81 127.81 0 0 0 121.96-88.54 126.4 126.4 0 0 0 84.5-61.3 127.82 127.82 0 0 0 -15.76-149.81zm-190.66 266.49a94.79 94.79 0 0 1 -60.85-22c.77-.42 2.12-1.16 3-1.7l101-58.34a16.42 16.42 0 0 0 8.3-14.37v-142.39l42.69 24.65a1.52 1.52 0 0 1 .83 1.17v117.92a95.18 95.18 0 0 1 -94.97 95.06zm-204.24-87.23a94.74 94.74 0 0 1 -11.34-63.7c.75.45 2.06 1.25 3 1.79l101 58.34a16.44 16.44 0 0 0 16.59 0l123.31-71.2v49.3a1.53 1.53 0 0 1 -.61 1.31l-102.1 58.95a95.16 95.16 0 0 1 -129.85-34.79zm-26.57-220.49a94.71 94.71 0 0 1 49.48-41.68c0 .87-.05 2.41-.05 3.48v116.68a16.41 16.41 0 0 0 8.29 14.36l123.31 71.19-42.69 24.65a1.53 1.53 0 0 1 -1.44.13l-102.11-59a95.16 95.16 0 0 1 -34.79-129.81zm350.74 81.62-123.31-71.2 42.69-24.64a1.53 1.53 0 0 1 1.44-.13l102.11 58.95a95.08 95.08 0 0 1 -14.69 171.55c0-.88 0-2.42 0-3.49v-116.68a16.4 16.4 0 0 0 -8.24-14.36zm42.49-63.95c-.75-.46-2.06-1.25-3-1.79l-101-58.34a16.46 16.46 0 0 0 -16.59 0l-123.31 71.2v-49.3a1.53 1.53 0 0 1 .61-1.31l102.1-58.9a95.07 95.07 0 0 1 141.19 98.44zm-267.11 87.87-42.7-24.65a1.52 1.52 0 0 1 -.83-1.17v-117.92a95.07 95.07 0 0 1 155.9-73c-.77.42-2.11 1.16-3 1.7l-101 58.34a16.41 16.41 0 0 0 -8.3 14.36zm23.19-50 54.92-31.72 54.92 31.7v63.42l-54.92 31.7-54.92-31.7z"></path></svg></div><div class="bubble bubble-right markdown">' +
             marked.marked(text) +
             '</div></div>';
         $(".content").append(html);
@@ -1237,7 +1142,7 @@
         $(".content").scrollTop($(".content")[0].scrollHeight);
         if (text.startsWith('new:')) send_time_str = get_time_str(send_time)
         let chat_item = $(
-            '<div class="item item-left"><div class="dialogueButtonGroup"><span class="copy-btn" onclick="codeCopy(this,false)">复制</span></div><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown"><div class="loading"><div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div></div></div></div>'
+            '<div class="item item-left"><div class="dialogueButtonGroup"><span class="copy-btn" onclick="codeCopy(this,false)">复制</span></div><div class="avatar"><svg style="width: 35px;height: 35px;fill: black;" viewBox="140 140 520 520" xmlns="http://www.w3.org/2000/svg"><path d="m617.24 354a126.36 126.36 0 0 0 -10.86-103.79 127.8 127.8 0 0 0 -137.65-61.32 126.36 126.36 0 0 0 -95.31-42.49 127.81 127.81 0 0 0 -121.92 88.49 126.4 126.4 0 0 0 -84.5 61.3 127.82 127.82 0 0 0 15.72 149.86 126.36 126.36 0 0 0 10.86 103.79 127.81 127.81 0 0 0 137.65 61.32 126.36 126.36 0 0 0 95.31 42.49 127.81 127.81 0 0 0 121.96-88.54 126.4 126.4 0 0 0 84.5-61.3 127.82 127.82 0 0 0 -15.76-149.81zm-190.66 266.49a94.79 94.79 0 0 1 -60.85-22c.77-.42 2.12-1.16 3-1.7l101-58.34a16.42 16.42 0 0 0 8.3-14.37v-142.39l42.69 24.65a1.52 1.52 0 0 1 .83 1.17v117.92a95.18 95.18 0 0 1 -94.97 95.06zm-204.24-87.23a94.74 94.74 0 0 1 -11.34-63.7c.75.45 2.06 1.25 3 1.79l101 58.34a16.44 16.44 0 0 0 16.59 0l123.31-71.2v49.3a1.53 1.53 0 0 1 -.61 1.31l-102.1 58.95a95.16 95.16 0 0 1 -129.85-34.79zm-26.57-220.49a94.71 94.71 0 0 1 49.48-41.68c0 .87-.05 2.41-.05 3.48v116.68a16.41 16.41 0 0 0 8.29 14.36l123.31 71.19-42.69 24.65a1.53 1.53 0 0 1 -1.44.13l-102.11-59a95.16 95.16 0 0 1 -34.79-129.81zm350.74 81.62-123.31-71.2 42.69-24.64a1.53 1.53 0 0 1 1.44-.13l102.11 58.95a95.08 95.08 0 0 1 -14.69 171.55c0-.88 0-2.42 0-3.49v-116.68a16.4 16.4 0 0 0 -8.24-14.36zm42.49-63.95c-.75-.46-2.06-1.25-3-1.79l-101-58.34a16.46 16.46 0 0 0 -16.59 0l-123.31 71.2v-49.3a1.53 1.53 0 0 1 .61-1.31l102.1-58.9a95.07 95.07 0 0 1 141.19 98.44zm-267.11 87.87-42.7-24.65a1.52 1.52 0 0 1 -.83-1.17v-117.92a95.07 95.07 0 0 1 155.9-73c-.77.42-2.11 1.16-3 1.7l-101 58.34a16.41 16.41 0 0 0 -8.3 14.36zm23.19-50 54.92-31.72 54.92 31.7v63.42l-54.92 31.7-54.92-31.7z"></path></svg></div><div class="bubble bubble-left markdown"><div class="loading"><div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div></div></div></div>'
         )
         $(".content").append(chat_item);
         $(".content").scrollTop($(".content")[0].scrollHeight);
