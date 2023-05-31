@@ -6,3 +6,4 @@ SQLAlchemy~=1.4.0
 pillow
 PyMySQL
 tiktoken
+cryptography
