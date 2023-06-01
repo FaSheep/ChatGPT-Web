@@ -593,7 +593,7 @@ def sign_in():
         if user.password == sha256.hexdigest():
             session['user_id'] = user.id
             session['chat_id'] = user.chat[0].id
-            session['chat_with_history'] = False
+            session['chat_with_history'] = True
             return {"code": 200, "data": "sign in successfully"}
         else:
             session['imageCode'] = imageCode().geneText()
