@@ -414,6 +414,16 @@ def index():
     check_session(session)
     return render_template('index.html')
 
+# 进入doc
+@app.route('/doc', methods=['GET', 'POST'])
+def doc():
+    """
+    doc
+    :return: doc
+    """
+    check_session(session)
+    return render_template('doc.html')
+
 # 进入登陆页
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -441,7 +451,7 @@ def load_messages():
     check_session(session)
     if session.get('user_id') is None:
         messages_history = [{"role": "assistant", "content": project_info},
-                            {"role": "assistant", "content": f"请[登录](/login)"}]
+                            {"role": "assistant", "content": f"---->[使用教程](/doc)<----<br>点击右上角齿轮图标或点击[此处](/login)登录"}]
     else:        
         with Session(engine) as sqlsession:
             history = sqlsession.query(History).filter(History.chat_id==session['chat_id']).all()

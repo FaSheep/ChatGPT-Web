@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用教程</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 36px;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col {
+            padding: 0 10px;
+        }
+        .col img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+        }
+        .step {
+            margin: 40px 0;
+        }
+        .step h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .step p {
+            font-size: 20px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+            text-align: justify;
+        }
+        @media (max-width: 768px) {
+            .col {
+                flex: 100%;
+                padding: 0;
+            }
+            .step h2 {
+                font-size: 22px;
+            }
+            .step p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>使用教程</h1>
+    </header>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <img src="/static/step1.png" alt="step 1">
+            </div>
+            <div class="col">
+                <img src="/static/step2.png" alt="step 2">
+            </div>
+            <div class="col">
+                <img src="/static/step3.png" alt="step 3">
+            </div>
+            <div class="col">
+                <img src="/static/step4.png" alt="step 4">
+            </div>
+            <div class="col">
+                <img src="/static/step5.png" alt="step 5">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
