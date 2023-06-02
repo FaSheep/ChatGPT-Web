@@ -439,10 +439,9 @@ def load_messages():
     :return: 聊天记录
     """
     check_session(session)
-    url = request.host_url + 'login'
     if session.get('user_id') is None:
         messages_history = [{"role": "assistant", "content": project_info},
-                            {"role": "assistant", "content": f"请[登录]({url})"}]
+                            {"role": "assistant", "content": f"请[登录](/login)"}]
     else:        
         with Session(engine) as sqlsession:
             history = sqlsession.query(History).filter(History.chat_id==session['chat_id']).all()
