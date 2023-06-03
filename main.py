@@ -37,6 +37,7 @@ with open("config.yaml", "r", encoding="utf-8") as f:
     DATABASE = config['DATABASE']
     API_URL = config['API_URL']
     USER_BALANCE = config['USER_BALANCE']
+    WELLCOME_TEXT = config['WELLCOME_TEXT']
 
 url = API_URL + "/v1/chat/completions"
 subscription_url = API_URL + "/v1/dashboard/billing/subscription"
@@ -51,6 +52,7 @@ SQL_PORT = os.getenv("SQL_PORT", default=SQL_PORT)
 SQL_USERNAME = os.getenv("SQL_USERNAME", default=SQL_USERNAME)
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", default=SQL_PASSWORD)
 DATABASE = os.getenv("DATABASE", default=DATABASE)
+WELLCOME_TEXT = os.getenv("WELLCOME_TEXT", default=WELLCOME_TEXT)
 USER_BALANCE = os.getenv("USER_BALANCE", default=USER_BALANCE) # 用户初始余额
 
 STREAM_FLAG = True  # 是否开启流式推送
@@ -161,10 +163,6 @@ class imageCode():
         # 将验证码字符串储存在session中
         session['imageCode'] = code
         return response
-
-project_info = "## ChatGPT 网页版    \n" \
-               " Code From  " \
-               "[ChatGPT-Web](https://github.com/FaSheep/ChatGPT-Web)  \n"
 
 def get_response_from_ChatGPT_API(message_context, apikey):
     """
@@ -450,8 +448,8 @@ def load_messages():
     """
     check_session(session)
     if session.get('user_id') is None:
-        messages_history = [{"role": "assistant", "content": project_info},
-                            {"role": "assistant", "content": f"---->[使用教程](/doc)<----<br>点击右上角齿轮图标或点击[此处](/login)登录"}]
+        messages_history = [{"role": "assistant", "content": WELLCOME_TEXT},
+                            {"role": "assistant", "content": "---->[使用教程](/doc)<----  \n点击右上角齿轮图标或点击[此处](/login)登录"}]
     else:        
         with Session(engine) as sqlsession:
             history = sqlsession.query(History).filter(History.chat_id==session['chat_id']).all()
