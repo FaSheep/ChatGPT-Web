@@ -864,7 +864,7 @@
 
     function getMode() {
         $.ajax({
-            url: "/getMode",
+            url: "/api/getMode",
             type: "Get",
             dataType: "json",
             success: function (data) {
@@ -881,7 +881,7 @@
     function isLogin() {
         return new Promise(function (resolve, reject) {
             $.ajax({
-                url: "/isLogin",
+                url: "/api/isLogin",
                 type: "Get",
                 dataType: "json",
                 success: function (data) {
@@ -909,7 +909,7 @@
     let selectedChatId;
 
     $.ajax({
-        url: "/loadChats",
+        url: "/api/loadChats",
         type: "Get",
         dataType: "json",
         success: function (data) {
@@ -954,7 +954,7 @@
         }
 
         $.ajax({
-            url: "/newChat",
+            url: "/api/newChat",
             type: "Get",
             dataType: "json",
             data: {
@@ -989,7 +989,7 @@
         let click = this;
         console.log(id);
         $.ajax({
-            url: "/selectChat",
+            url: "/api/selectChat",
             type: "Get",
             dataType: "json",
             data: { // get 方法时 data放置于路径 ?id=
@@ -1017,7 +1017,7 @@
 
     function loadHistory() {
         $.ajax({
-            url: "/loadHistory",
+            url: "/api/loadHistory",
             type: "Get",
             dataType: "json",
             success: function (data) {
@@ -1147,7 +1147,7 @@
         $(".content").scrollTop($(".content")[0].scrollHeight);
         let get_times = 0;
         returnMessageAjax = $.ajax({
-            url: "/returnMessage",
+            url: "/api/returnMessage",
             data: {
                 "send_message": text,
                 "send_time": send_time_str // 当为空时，即告知后端不用存储
@@ -1223,7 +1223,7 @@
         }
     });
     $('#del-btn').click(function () {
-        $.get("/deleteHistory", function (data) {
+        $.get("/api/deleteHistory", function (data) {
             location.reload();
         });
     });
@@ -1232,7 +1232,7 @@
             if (!confirm("确认到连续对话模式吗？连续对话将消耗大量token")) {
                 return;
             }
-            $.get("/changeMode/continuous", function (data) {
+            $.get("/api/changeMode/continuous", function (data) {
                 if (data.code === -1) {
                     alert(data.msg)
                 } else {
@@ -1244,7 +1244,7 @@
             });
             $("#chmod-btn").text("当前为连续对话");
         } else {
-            $.get("/changeMode/normal", function (data) {
+            $.get("/api/changeMode/normal", function (data) {
                 if (data.code === -1) {
                     alert(data.msg)
                 } else {
