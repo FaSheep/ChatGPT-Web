@@ -1179,7 +1179,10 @@
                             let codeBlock = $("<pre class='language-json'>").append("<code>" + JSON.stringify(jsonData, null, 2) + "</code>");
                             $(div).append(codeBlock);
                         } catch (e) {
-                            console.log('不是json格式')
+                            // 补全```代码格式
+                            if (response.split("```").length % 2 === 0) {
+                                response += "\n```";
+                            }
                             div.innerHTML = marked.marked(response);  // 将响应内容用 marked 库转化为 HTML，存储在 div 元素中
                         }
                         MathJax.Hub.Typeset(div);  // 将表达式用 MathJax 渲染为数学公式
@@ -1198,7 +1201,7 @@
                     alert("请求超时");
                 }
                 $("#stop-btn").hide();
-                let btn = $("<span class=\"code-copy-btn\" onclick='codeCopy(this,false)'>复制代码</span>");
+                let btn = $("<span class=\"code-copy-btn\" onclick='codeCopy(this,true)'>复制代码</span>");
                 btn.prependTo(chat_item.find(".bubble").find("pre"));
             }
         });
