@@ -226,9 +226,8 @@
       <input class="input" type="text" name="kami" id="kami" placeholder="请输入卡密">
       <div class="verificationCode">
         <input class="input" type="text" placeholder="请输入验证码" name="verificationCode">
-        <img src="/imgCode" alt="" id="imgCode">
+        <img alt="" id="imgCode">
       </div>
-      <img src="/imgCode" alt="" id="imgCode">
       <button class="button" type="button" id="submit">兑换</button>
     </form>
     <a class="link" href="https://afdian.net/item/4c4b537cfbe911ed8def52540025c377" target="_blank">没有卡密？点击这里购买</a>
@@ -250,13 +249,13 @@
       });
 
       // 获取用户名
-      $.get("/getName", function (data) {
+      $.get("/api/getName", function (data) {
         // 显示用户名
         userName.append(data.data);
       });
 
       // 获取余额
-      $.get("/checkBalance", function (data) {
+      $.get("/api/checkBalance", function (data) {
         // 显示余额
         userBalance.append(data.data);
       });
@@ -273,7 +272,7 @@
           alert("请输入验证码");
         } else {
           $.ajax({
-            url: "/recharge",
+            url: "/api/recharge",
             type: "post",
             dataType: "json",
             data: {
@@ -283,7 +282,7 @@
             success: function (data) {
               console.log(data);
               if (data.code === 200) {
-                $.get("/checkBalance", function (data) {
+                $.get("/api/checkBalance", function (data) {
                   // 清空原来的余额
                   userBalance.empty();
                   // 显示新的余额
@@ -300,20 +299,6 @@
               imgCode()
             }
           })
-
-
-          // 发送GET请求
-          // $.get("http://127.0.0.1:5000/recharge", { key: key, code: verificationCode }, function (data) {
-          //   // 处理响应数据
-          //   alert(data.data);
-          //   // 新增的更新余额的功能
-          //   $.get("http://127.0.0.1:5000/checkBalance", function (data) {
-          //     // 清空原来的余额
-          //     userBalance.empty();
-          //     // 显示新的余额
-          //     userBalance.append(data.data);
-          //   });
-          // });
         }
 
         // 阻止表单默认提交行为
@@ -324,7 +309,7 @@
 
     function imgCode() {
       $.ajax({
-        url: '/imgCode',
+        url: '/api/imgCode',
         type: 'get',
         dataType: 'image/gif',
         complete: function (e) {

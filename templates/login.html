@@ -297,7 +297,7 @@
             <input type="password" placeholder="确认密码" name="pwd2">
             <div class="verificationCode">
                 <input type="text" placeholder="验证码" name="verificationCode2">
-                <img src="/imgCode" alt="" id="imgCode2">
+                <img alt="" id="imgCode2">
             </div> <button type="submit">注册</button> <!-- 将按钮设置为表单提交按钮 -->
         </form>
         <span>已有账号？<a href="#" id="to-login" onclick="showLogin()">去登录</a></span>
@@ -356,7 +356,7 @@
         // 获取验证码图片
         function imgCode() {
             $.ajax({
-                url: '/imgCode',
+                url: '/api/imgCode',
                 type: 'get',
                 dataType: 'image/gif',
                 complete: function (e) {
@@ -369,7 +369,7 @@
         // 实现登录和注册的逻辑
         function login(username, pwd, verificationCode) {
             $.ajax({
-                url: "/signin",
+                url: "/api/signin",
                 type: "post",
                 dataType: "json",
                 data: {
@@ -399,7 +399,7 @@
 
         function register(username, pwd1, verificationCode2) {
             $.ajax({
-                url: "/signup",
+                url: "/api/signup",
                 type: "post",
                 dataType: "json",
                 data: {

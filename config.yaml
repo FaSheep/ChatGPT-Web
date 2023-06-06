@@ -12,6 +12,8 @@ SQL_USERNAME: root
 SQL_PASSWORD: password
 DATABASE: chat
 
+WELLCOME_TEXT: "## ChatGPT 网页版    \nCode From [ChatGPT-Web](https://github.com/FaSheep/ChatGPT-Web)"
+
 # 功能性配置，可适当调整
 CHAT_CONTEXT_NUMBER_MAX: 7  # 连续对话模式下的上下文最大数量 n，即开启连续对话模式后，将上传本条消息以及之前你和GPT对话的n-1条消息
 USER_BALANCE: 1000 # 用户初始余额

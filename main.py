@@ -37,6 +37,7 @@ with open("config.yaml", "r", encoding="utf-8") as f:
     DATABASE = config['DATABASE']
     API_URL = config['API_URL']
     USER_BALANCE = config['USER_BALANCE']
+    WELLCOME_TEXT = config['WELLCOME_TEXT']
 
 url = API_URL + "/v1/chat/completions"
 subscription_url = API_URL + "/v1/dashboard/billing/subscription"
@@ -51,6 +52,7 @@ SQL_PORT = os.getenv("SQL_PORT", default=SQL_PORT)
 SQL_USERNAME = os.getenv("SQL_USERNAME", default=SQL_USERNAME)
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", default=SQL_PASSWORD)
 DATABASE = os.getenv("DATABASE", default=DATABASE)
+WELLCOME_TEXT = os.getenv("WELLCOME_TEXT", default=WELLCOME_TEXT)
 USER_BALANCE = os.getenv("USER_BALANCE", default=USER_BALANCE) # 用户初始余额
 
 STREAM_FLAG = True  # 是否开启流式推送
@@ -161,10 +163,6 @@ class imageCode():
         # 将验证码字符串储存在session中
         session['imageCode'] = code
         return response
-
-project_info = "## ChatGPT 网页版    \n" \
-               " Code From  " \
-               "[ChatGPT-Web](https://github.com/FaSheep/ChatGPT-Web)  \n"
 
 def get_response_from_ChatGPT_API(message_context, apikey):
     """
@@ -442,7 +440,7 @@ def redeem():
     """
     return render_template('redeem.html')
 
-@app.route('/loadHistory', methods=['GET', 'POST'])
+@app.route('/api/loadHistory', methods=['GET', 'POST'])
 def load_messages():
     """
     加载聊天记录
@@ -450,8 +448,8 @@ def load_messages():
     """
     check_session(session)
     if session.get('user_id') is None:
-        messages_history = [{"role": "assistant", "content": project_info},
-                            {"role": "assistant", "content": f"---->[使用教程](/doc)<----<br>点击右上角齿轮图标或点击[此处](/login)登录"}]
+        messages_history = [{"role": "assistant", "content": WELLCOME_TEXT},
+                            {"role": "assistant", "content": "---->[使用教程](/doc)<----  \n点击右上角齿轮图标或点击[此处](/login)登录"}]
     else:        
         with Session(engine) as sqlsession:
             history = sqlsession.query(History).filter(History.chat_id==session['chat_id']).all()
@@ -462,7 +460,7 @@ def load_messages():
 
     return {"code": 0, "data": messages_history, "message": ""}
 
-@app.route('/loadChats', methods=['GET', 'POST'])
+@app.route('/api/loadChats', methods=['GET', 'POST'])
 def load_chats():
     """
     加载聊天联系人
@@ -531,7 +529,7 @@ def get_balance(apikey):
                 f"\n"+recent
 
 # 注册接口
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/api/signup', methods=['GET', 'POST'])
 def sign_up():
     check_session(session)
     username = request.values.get("username").strip().lower()
@@ -570,7 +568,7 @@ def sign_up():
     return {"code": 200, "data": "sign up successfully"}
 
 # 登录接口
-@app.route('/signin', methods=['GET', 'POST'])
+@app.route('/api/signin', methods=['GET', 'POST'])
 def sign_in():
     check_session(session)
     username = request.values.get("username").strip().lower()
@@ -608,18 +606,18 @@ def sign_in():
             session['imageCode'] = imageCode().geneText()
             return {"code": 400, "data": "error password"}
     
-@app.route('/signOut', methods=['GET', 'POST'])
+@app.route('/api/signOut', methods=['GET', 'POST'])
 def sign_out():
     session['user_id'] = None
     session['chat_id'] = None
     return redirect('/')
 
-@app.route('/imgCode', methods=['GET', 'POST'])
+@app.route('/api/imgCode', methods=['GET', 'POST'])
 def imgCode():
     check_session(session)
     return imageCode().getImgCode()
 
-@app.route('/isLogin', methods=['GET', 'POST'])
+@app.route('/api/isLogin', methods=['GET', 'POST'])
 def is_login():
     check_session(session)
     if not check_user_bind(session):
@@ -627,7 +625,7 @@ def is_login():
     else:
         return {"code": 200, "data": True}
 
-@app.route('/recharge', methods=['GET', 'POST'])
+@app.route('/api/recharge', methods=['GET', 'POST'])
 def recharge():
     check_session(session)
     if not check_user_bind(session):
@@ -653,7 +651,7 @@ def recharge():
         sqlsession.commit()
     return {"code": 200, "data": "recharge successfully"}
 
-@app.route('/getName', methods=['GET', 'POST'])
+@app.route('/api/getName', methods=['GET', 'POST'])
 def get_name():
     check_session(session)
     if not check_user_bind(session):
@@ -663,7 +661,7 @@ def get_name():
         user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         return {"code": 200, "data": user.username}
     
-@app.route('/checkBalance', methods=['GET', 'POST'])
+@app.route('/api/checkBalance', methods=['GET', 'POST'])
 def checkBalance():
     check_session(session)
     if not check_user_bind(session):
@@ -672,7 +670,7 @@ def checkBalance():
         user = sqlsession.query(User).filter(User.id==session['user_id']).one()
         return {"code": 200, "data": user.balance}
 
-@app.route('/returnMessage', methods=['GET', 'POST'])
+@app.route('/api/returnMessage', methods=['GET', 'POST'])
 def return_message():
     """
     获取用户发送的消息，调用get_chat_response()获取回复，返回回复，用于更新聊天框
@@ -700,7 +698,7 @@ def return_message():
                 return "余额不足"
             return app.response_class(generate(), mimetype='application/json')
 
-@app.route('/getMode', methods=['GET'])
+@app.route('/api/getMode', methods=['GET'])
 def get_mode():
     """
     获取当前对话模式
@@ -708,7 +706,7 @@ def get_mode():
     """
     check_session(session)
     if not check_user_bind(session):
-        return "normal"
+        return {"mode": "normal"}
 
     if session['chat_with_history']:
         return {"mode": "continuous"}
@@ -716,7 +714,7 @@ def get_mode():
         return {"mode": "normal"}
 
 
-@app.route('/changeMode/<status>', methods=['GET'])
+@app.route('/api/changeMode/<status>', methods=['GET'])
 def change_mode(status):
     """
     切换对话模式
@@ -737,7 +735,7 @@ def change_mode(status):
     return {"code": 200, "data": message}
 
 
-@app.route('/selectChat', methods=['GET'])
+@app.route('/api/selectChat', methods=['GET'])
 def select_chat():
     """
     选择聊天对象
@@ -761,7 +759,7 @@ def select_chat():
     return {"code": 400, "msg": "无效ID"}
 
 
-@app.route('/newChat', methods=['GET'])
+@app.route('/api/newChat', methods=['GET'])
 def new_chat():
     """
     新建聊天对象
@@ -783,7 +781,7 @@ def new_chat():
     return {"code": 200, "data": {"name": name, "id": chat_id, "selected": True, "messages_total": 0}}
 
 
-@app.route('/deleteHistory', methods=['GET'])
+@app.route('/api/deleteHistory', methods=['GET'])
 def delete_history():
     """
     清空上下文
